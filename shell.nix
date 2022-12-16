@@ -2,9 +2,11 @@ with import <nixpkgs> { };
 
 let
   pythonPackages = python39Packages;
+  pypyPackages = pypy3Packages;
 in pkgs.mkShell rec {
   venvDir = "./.venv";
   requirements = "requirements.txt";
+
   name = "nfstream";
 
   buildInputs = [
@@ -40,13 +42,15 @@ in pkgs.mkShell rec {
 
     # Under some circumstances it might be necessary to add your virtual
     # environment to PYTHONPATH, which you can do here too;
-    PYTHONPATH=$PWD/${venvDir}/${pythonPackages.python.sitePackages}/:$PYTHONPATH
+    PYTHONPATH=$PWD/${venvDir}/${pythonPackages.python.sitePackages}/:${pypy}:$PYTHONPATH
     
     source "${venvDir}/bin/activate"
 
+    echo "Upgrading pip to latest version"
     python -m pip install --upgrade pip
     
     if [ -f "./${requirements}" ]; then
+      echo "Install '${requirements}'"
       pip install -r ${requirements}
     fi
   '';

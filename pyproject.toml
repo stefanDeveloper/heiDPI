@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "heistream"
+version = "0.0.1"
+authors = [
+  { name="Stefan Machmeier", email="stefan.machmeier@uni-heidelberg.de" },
+]
+description = "NFStream dockerized image"
+readme = "README.md"
+license = { file="LICENSE" }
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: European Union Public Licence 1.2 (EUPL 1.2)",
+    "Operating System :: OS Independent",
+]
+
+[project.scripts]
+fip = "cli.FlowImageProcessor:cli"
+
+[project.urls]
+"Homepage" = "https://github.com/stefanDeveloper/heistream"
+"Bug Tracker" = "https://github.com/stefanDeveloper/heistream/issues"

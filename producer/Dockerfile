@@ -1,0 +1,45 @@
+FROM alpine:3.14 as builder
+
+WORKDIR /root
+RUN apk update && \
+    apk add --no-cache git \
+                       make \
+                       cmake \
+                       clang \
+                       clang-dev \
+                       make \
+                       automake \
+                       gcc \
+                       g++ \
+                       libc-dev \
+                       linux-headers \
+                       pkgconfig \
+                       libpcap-dev \
+                       autoconf \
+                       libtool
+
+RUN git clone https://github.com/utoni/nDPId.git
+
+RUN cd nDPId && mkdir build && cd build && cmake .. -DBUILD_NDPI=ON && make
+
+FROM alpine:3.14
+
+ENV MAX_BUFFERED_LINES=1024
+ENV MAX_THREADS=4
+ENV FLOW_ANALYSIS=1
+ENV TUNE_PARAM=""
+ENV LOAD_JA3=""
+ENV LOAD_SSL_SHA1=""
+
+WORKDIR /root
+RUN apk update && \
+    apk add --no-cache libpcap-dev
+
+COPY --from=builder /root/nDPId/libnDPI/ /root/
+COPY --from=builder /root/nDPId/build/nDPIsrvd /root/nDPId/build/nDPId /root/
+
+COPY docker-entrypoint.sh /root/
+RUN chmod +x /root/docker-entrypoint.sh
+
+ENTRYPOINT ["/bin/sh", "/root/docker-entrypoint.sh"]
+CMD ["nDPId"]

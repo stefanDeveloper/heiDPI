@@ -25,3 +25,10 @@ jobs:
 
     - name: Docker Push
       run: docker push stefan96/heistream-ndpid:latest
+
+    - name: Docker Hub Description
+      uses: peter-evans/dockerhub-description@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        repository: stefan96/heistream-ndpid

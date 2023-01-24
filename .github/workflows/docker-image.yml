@@ -21,7 +21,7 @@ jobs:
       run: |
         docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD 
     - name: Build the Docker image
-      run: docker build . --file Dockerfile.producer --tag heistream-ndpid:latest
+      run: docker build . --file Dockerfile.producer --tag stefan96/heistream-ndpid:latest
 
     - name: Docker Push
-      run: docker push heistream-ndpid:latest
+      run: docker push stefan96/heistream-ndpid:latest

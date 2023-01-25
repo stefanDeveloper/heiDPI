@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  consumer:
+    image: stefan96/heistream-ndpid:consumer-latest
+    volumes:
+      - $(pwd)/heistream-data:/var/log/
+    networks:
+      - host
+  producer:
+    image: stefan96/heistream-ndpid:producer-latest
+    networks:
+      - host

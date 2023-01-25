@@ -1,8 +1,10 @@
 FROM pypy:latest
 
+ENV JSON_PATH="/var/log/nDPIdsrvd.json"
+
 WORKDIR /usr/src/app
 
 COPY py-json-stdout.py .
 COPY nDPIsrvd.py .
 
-CMD [ "pypy3", "./py-json-stdout.py"]
+CMD [ "pypy3", "-u", "./py-json-stdout.py"]

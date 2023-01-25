@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-
-import os
 import sys
+import os
+import json
 
-sys.path.append(os.path.dirname(sys.argv[0]) + '/../../dependencies')
-sys.path.append(os.path.dirname(sys.argv[0]) + '/../share/nDPId')
-sys.path.append(os.path.dirname(sys.argv[0]))
-sys.path.append(sys.base_prefix + '/share/nDPId')
 import nDPIsrvd
 from nDPIsrvd import nDPIsrvdSocket, TermColor
 
+JSON_PATH = os.getenv("JSON_PATH", "/var/log/nDPIdsrvd.json")
+
 def onJsonLineRecvd(json_dict, instance, current_flow, global_user_data):
-    print(json_dict)
+    with open(JSON_PATH, "a") as f:
+        json.dump(json_dict, f)
+        f.write("\n")
     return True
 
 if __name__ == '__main__':

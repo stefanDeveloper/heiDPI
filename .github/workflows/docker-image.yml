@@ -14,28 +14,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Docker login
-      env:
-        DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD }}
-      run: |
-        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
 
     - name: Build Producer Image
       run: docker build . --file Dockerfile.producer --tag stefan96/heistream-ndpid:latest --tag stefan96/heistream-ndpid:producer-latest
 
     - name: Build Consumer Image
       run: docker build . --file Dockerfile.consumer --tag stefan96/heistream-ndpid:consumer-latest
-
-    - name: Docker Push
-      run: |
-        docker push stefan96/heistream-ndpid:producer-latest
-        docker push stefan96/heistream-ndpid:consumer-latest
-        docker push stefan96/heistream-ndpid:latest
-
-    - name: Docker Hub Description
-      uses: peter-evans/dockerhub-description@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        repository: stefan96/heistream-ndpid

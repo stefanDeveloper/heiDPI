@@ -25,6 +25,8 @@ fi
 
 [[ $MAX_THREADS -gt 0 ]] && params_ndpid+=(-C $MAX_THREADS)
 
+[[ ! -z $INTERFACE ]] && params_ndpid+=(-i $INTERFACE)
+
 [[ $FLOW_ANALYSIS = true ]] && params_ndpid+=(-A)
 
 [[ ! -z $TUNE_PARAM ]] && params_ndpid+=($TUNE_PARAM)

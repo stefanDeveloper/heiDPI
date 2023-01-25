@@ -19,10 +19,18 @@ In order to run this container you'll need docker installed.
 
 ### Usage
 
+Run producer and consumer separately from each other using UDP socket:
+
 ```bash
 docker pull 
 docker run -p 127.0.0.1:7000:7000 -net host stefan96/heistream-ndpid:producer-latest
 docker run -net host stefan96/heistream-ndpid:consumer-latest
+```
+
+or use the `docker-compose.yml`:
+
+```sh
+docker-compose up
 ```
 
 ## Environment Variables
@@ -31,6 +39,7 @@ docker run -net host stefan96/heistream-ndpid:consumer-latest
 
 | Variable                     | Type    | Default           |
 |------------------------------|---------|-------------------|
+| INTERFACE | `string` | "" |
 | PORT | `int` | 7000 |
 | MAX_THREADS | `int` | 4 |
 | FLOW_ANALYSIS | `boolean` | false |

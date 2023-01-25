@@ -28,6 +28,7 @@ ENV MAX_BUFFERED_LINES=1024 \
     MAX_THREADS=4 \
     FLOW_ANALYSIS=false \
     TUNE_PARAM="" \
+    INTERFACE="" \
     JA3_URL="https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv" \
     SSL_SHA1_URL="https://sslbl.abuse.ch/blacklist/sslblacklist.csv" \
     PORT=7000

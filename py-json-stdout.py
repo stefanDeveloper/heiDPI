@@ -2,14 +2,23 @@
 import sys
 import os
 import json
+import stat
 
 import nDPIsrvd
 from nDPIsrvd import nDPIsrvdSocket
 
-JSON_PATH = os.getenv("JSON_PATH", "test.json")
+DEFAULT_HOST = '127.0.0.1'
+DEFAULT_PORT = 7000
+DEFAULT_UNIX = '/tmp/ndpid-distributor.sock'
 
-SHOW_PACKET_EVENTS = os.getenv("SHOW_PACKET_EVENTS", False)
+JSON_PATH = os.getenv("JSON_PATH", "/var/log/nDPIdsrvd.json")
+
+UNIX = os.getenv("UNIX", "")
+HOST = os.getenv("HOST", "")
+PORT = os.getenv("PORT", 7000)
+
 SHOW_FLOW_EVENTS = os.getenv("SHOW_FLOW_EVENTS", True)
+SHOW_PACKET_EVENTS = os.getenv("SHOW_PACKET_EVENTS", False)
 SHOW_ERROR_EVENTS = os.getenv("SHOW_ERROR_EVENTS", False)
 SHOW_DAEMON_EVENTS = os.getenv("SHOW_DAEMON_EVENTS", False)
 
@@ -21,12 +30,35 @@ def onJsonLineRecvd(json_dict, instance, current_flow, global_user_data):
             f.write("\n")
     return True
 
+def validateAddress():
+    tcp_addr_set = False
+    address = None
+
+    if HOST is "":
+        address_tcpip = (DEFAULT_HOST, PORT)
+    else:
+        address_tcpip = (HOST, PORT)
+        tcp_addr_set = True
+
+    if UNIX is "":
+        address_unix = DEFAULT_UNIX
+    else:
+        address_unix = UNIX
+
+    possible_sock_mode = 0
+    try:
+        possible_sock_mode = os.stat(address_unix).st_mode
+    except:
+        pass
+    if tcp_addr_set == False and stat.S_ISSOCK(possible_sock_mode):
+        address = address_unix
+    else:
+        address = address_tcpip
+
+    return address
 
 if __name__ == '__main__':
-    argparser = nDPIsrvd.defaultArgumentParser()
-    args = argparser.parse_args()
-    print(args)
-    address = nDPIsrvd.validateAddress(args)
+    address = validateAddress()
     print(address)
 
     sys.stderr.write('Recv buffer size: {}\n'.format(

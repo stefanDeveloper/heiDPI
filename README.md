@@ -29,8 +29,8 @@ docker pull stefan96/heistream-ndpid:consumer-latest
 Run producer and consumer separately from each other using UDP socket:
 
 ```sh
-docker run -p 127.0.0.1:7000:7000 -net host stefan96/heistream-ndpid:producer-latest
-docker run -net host stefan96/heistream-ndpid:consumer-latest
+docker run -p 127.0.0.1:7000:7000 --net host stefan96/heistream-ndpid:producer-latest
+docker run --net host stefan96/heistream-ndpid:consumer-latest
 ```
 
 or use the `docker-compose.yml`:
@@ -42,8 +42,8 @@ docker-compose up
 Additionally, you use a UNIX socket:
 
 ```sh
-docker run -v ${PWD}/heistream-data:/tmp/nDPIsrvd-daemon-distributor.sock -net host stefan96/heistream-ndpid:producer-latest
-docker run -v ${PWD}/heistream-data:/tmp/nDPIsrvd-daemon-distributor.sock -e -net host stefan96/heistream-ndpid:consumer-latest
+docker run -v ${PWD}/heistream-data:/tmp/ --net host stefan96/heistream-ndpid:producer-latest
+docker run -v ${PWD}/heistream-data:/tmp/ -v ${PWD}/heistream-logs:/var/log -e UNIX=/tmp/nDPIsrvd-daemon-distributor.sock --net host stefan96/heistream-ndpid:consumer-latest
 ```
 
 ## Environment Variables

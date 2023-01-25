@@ -1,6 +1,13 @@
 FROM pypy:latest
 
-ENV JSON_PATH="/var/log/nDPIdsrvd.json"
+ENV JSON_PATH="/var/log/nDPIdsrvd.json" \
+    SHOW_PACKET_EVENTS=False \
+    SHOW_FLOW_EVENTS=True \
+    SHOW_ERROR_EVENTS=False \
+    SHOW_DAEMON_EVENTS=False \
+    UNIX="" \
+    PORT=7000 \
+    HOST=""
 
 WORKDIR /usr/src/app
 

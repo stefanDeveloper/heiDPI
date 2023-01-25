@@ -26,14 +26,15 @@ FROM alpine:3.14
 
 ENV MAX_BUFFERED_LINES=1024 \
     MAX_THREADS=4 \
-    FLOW_ANALYSIS=1 \
+    FLOW_ANALYSIS=true \
     TUNE_PARAM="" \
-    LOAD_JA3="" \
-    LOAD_SSL_SHA1=""
+    JA3_URL="https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv" \
+    SSL_SHA1_URL="https://sslbl.abuse.ch/blacklist/sslblacklist.csv" \
+    PORT=7000
 
 WORKDIR /root
 RUN apk update && \
-    apk add --no-cache libpcap-dev
+    apk add --no-cache curl libpcap-dev bash
 
 COPY --from=builder /root/nDPId/libnDPI/ /root/
 COPY --from=builder /root/nDPId/build/nDPIsrvd /root/nDPId/build/nDPId /root/
@@ -41,5 +42,5 @@ COPY --from=builder /root/nDPId/build/nDPIsrvd /root/nDPId/build/nDPId /root/
 COPY docker-entrypoint.sh /root/
 RUN chmod +x /root/docker-entrypoint.sh
 
-ENTRYPOINT ["/bin/sh", "/root/docker-entrypoint.sh"]
+ENTRYPOINT ["/bin/bash", "/root/docker-entrypoint.sh"]
 CMD ["nDPId"]

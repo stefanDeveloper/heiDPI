@@ -26,7 +26,7 @@ FROM alpine:3.14
 
 ENV MAX_BUFFERED_LINES=1024 \
     MAX_THREADS=4 \
-    FLOW_ANALYSIS=true \
+    FLOW_ANALYSIS=false \
     TUNE_PARAM="" \
     JA3_URL="https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv" \
     SSL_SHA1_URL="https://sslbl.abuse.ch/blacklist/sslblacklist.csv" \

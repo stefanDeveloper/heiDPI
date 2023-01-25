@@ -27,6 +27,8 @@ fi
 
 [[ $FLOW_ANALYSIS = true ]] && params_ndpid+=(-A)
 
+[[ ! -z $TUNE_PARAM ]] && params_ndpid+=($TUNE_PARAM)
+
 /root/nDPIsrvd -p /tmp/nDPIsrvd-daemon.pid \
             -c /tmp/nDPIsrvd-daemon-collector.sock \
             -s /tmp/nDPIsrvd-daemon-distributor.sock \

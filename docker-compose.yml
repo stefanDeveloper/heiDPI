@@ -3,10 +3,10 @@ services:
   consumer:
     image: stefan96/heistream-ndpid:consumer-latest
     volumes:
-      - $(pwd)/heistream-data:/var/log/
-    networks:
-      - host
+      - ${PWD}/heistream-data:/var/log/
+    network_mode: host
+    depends_on:
+      - producer
   producer:
     image: stefan96/heistream-ndpid:producer-latest
-    networks:
-      - host
+    network_mode: host

@@ -10,7 +10,7 @@ set -e
             -u root \
             -d \
             -L /tmp/nDPIsrvd.log \
-            -C $MAX_BUFFERED_LINES &
+            -C $MAX_BUFFERED_LINES
 
 exec /root/nDPId -p /tmp/nDPId-daemon.pid \
             -c /tmp/nDPIsrvd-daemon-collector.sock \

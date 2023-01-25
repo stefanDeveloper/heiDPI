@@ -24,12 +24,12 @@ RUN cd nDPId && mkdir build && cd build && cmake .. -DBUILD_NDPI=ON && make
 
 FROM alpine:3.14
 
-ENV MAX_BUFFERED_LINES=1024
-ENV MAX_THREADS=4
-ENV FLOW_ANALYSIS=1
-ENV TUNE_PARAM=""
-ENV LOAD_JA3=""
-ENV LOAD_SSL_SHA1=""
+ENV MAX_BUFFERED_LINES=1024 \
+    MAX_THREADS=4 \
+    FLOW_ANALYSIS=1 \
+    TUNE_PARAM="" \
+    LOAD_JA3="" \
+    LOAD_SSL_SHA1=""
 
 WORKDIR /root
 RUN apk update && \

@@ -1,0 +1,8 @@
+FROM pypy:latest
+
+WORKDIR /usr/src/app
+
+COPY py-json-stdout.py .
+COPY nDPIsrvd.py .
+
+CMD [ "pypy3", "./py-json-stdout.py"]

@@ -45,7 +45,7 @@ fi
 [[ $FLOW_ANALYSIS = true ]] && params_ndpid+=(-A)
 
 if [[ -n $TUNE_PARAM ]]; then
-    for word in $TUNE_PARAM; do
+    for word in $(echo $TUNE_PARAM | tr ";" "\n"); do
         params_ndpid+=(-o $word)
     done
 fi

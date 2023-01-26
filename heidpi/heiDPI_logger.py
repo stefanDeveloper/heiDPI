@@ -31,7 +31,6 @@ def file_path(string):
     else:
        raise NotADirectoryError(string)
 
-
 def onJsonLineRecvd(json_dict, instance, current_flow, global_user_data):
     date_time = datetime.fromtimestamp(datetime.now().timestamp())
     str_date_time = date_time.strftime(App.config()["logging"]["datefmt"].get())
@@ -42,13 +41,16 @@ def onJsonLineRecvd(json_dict, instance, current_flow, global_user_data):
             json.dump(json_dict, f)
             f.write("\n")
     if SHOW_PACKET_EVENTS and ("packet_event_id" in json_dict):
+        if json_dict["packet_event_name"] in App.config()["packet_event"]["packet_event_name"].get():
+            if App.config()["packet_event"]["irngore_fields"] != []:   
+                list(map(json_dict.pop, App.config()["packet_event"]["ignore_fields"].get()))
         with open(f'{JSON_PATH}/packet_event.json', "a") as f:
             json.dump(json_dict, f)
             f.write("\n")
     if SHOW_FLOW_EVENTS and ("flow_event_id" in json_dict):
         if json_dict["flow_event_name"] in App.config()["flow_event"]["flow_event_name"].get():
-            # if App.config()["flow_event"]["irngore_fields"] != []:   
-            #     map(json_dict.__delitem__, filter(json_dict.__contains__,App.config()["flow_event"]["irngore_fields"]))
+            if App.config()["flow_event"]["irngore_fields"] != []:   
+                list(map(json_dict.pop, App.config()["flow_event"]["ignore_fields"].get()))
             with open(f'{JSON_PATH}/flow_event.json', "a") as f:
                 json.dump(json_dict, f)
                 f.write("\n")

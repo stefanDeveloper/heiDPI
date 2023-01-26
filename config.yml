@@ -9,8 +9,7 @@ logging:
   datefmt: "%Y-%d-%mT%I:%M:%S"
 
 flow_event:
-  ignore_fields:
-    - flow_id
+  ignore_fields: []
   flow_event_name:
     - update
     - end
@@ -22,7 +21,8 @@ daemon_event:
 
 packet_event:
   ignore_fields: []
-  packet_event_name: []
+  packet_event_name:
+    - packet-flow
 
 error_event:
   ignore_fields: []

@@ -44,7 +44,11 @@ fi
 
 [[ $FLOW_ANALYSIS = true ]] && params_ndpid+=(-A)
 
-[[ -n $TUNE_PARAM ]] && params_ndpid+=(-o $TUNE_PARAM)
+if [[ -n $TUNE_PARAM ]]; then
+    for word in $TUNE_PARAM; do
+        params_ndpid+=(-o $word)
+    done
+fi
 
 [[ -n $PCAP_FILTER ]] && params_ndpid+=(-B $PCAP_FILTER)
 

@@ -56,11 +56,11 @@ docker run -v ${PWD}/heidpi-data:/tmp/ -v ${PWD}/heidpi-logs:/var/log -e UNIX=/t
 | `PORT` | `int` | 7000 |
 | `MAX_THREADS` | `int` | 4 |
 | `FLOW_ANALYSIS` | `boolean` | false |
-| `JA3_URL` | `string` | https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv |
-| `SSL_SHA1_URL` | `string` | https://sslbl.abuse.ch/blacklist/sslblacklist.csv |
+| `JA3_URL` | `string` | |
+| `SSL_SHA1_URL` | `string` | |
 | `TUNE_PARAM` | `string` | |
 
-For `TUNE_PARAM`, concatinate the subopts below like `max-flows-per-thread=2024 ....`
+For `TUNE_PARAM`, concatenate the subopts below like `max-flows-per-thread=2024;max-idle-flows-per-thread=64;...`
 
 ```
 subopts:
@@ -89,10 +89,10 @@ subopts:
 | `HOST` | `string` | |
 | `PORT` | `string` | 7000 |
 | `JSON_PATH` | `string` | `/var/log/nDPIdsrvd.json` |
-| `SHOW_ERROR_EVENTS` | `boolean` | False |
-| `SHOW_DAEMON_EVENTS` | `boolean` | False |
-| `SHOW_PACKET_EVENTS` | `boolean` | False |
-| `SHOW_FLOW_EVENTS` | `boolean` | True |
+| `SHOW_ERROR_EVENTS` | `boolean` | 0 |
+| `SHOW_DAEMON_EVENTS` | `boolean` | 0 |
+| `SHOW_PACKET_EVENTS` | `boolean` | 0 |
+| `SHOW_FLOW_EVENTS` | `boolean` | 1 |
 | `MAX_BUFFERED_LINES` | `int` | 1024 |
 
 ## License

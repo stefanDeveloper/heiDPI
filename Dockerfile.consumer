@@ -1,17 +1,18 @@
 FROM pypy:latest
 
-ENV JSON_PATH="/var/log/nDPIdsrvd.json" \
-    SHOW_PACKET_EVENTS=False \
-    SHOW_FLOW_EVENTS=True \
-    SHOW_ERROR_EVENTS=False \
-    SHOW_DAEMON_EVENTS=False \
+ENV JSON_PATH="/var/log" \
+    SHOW_FLOW_EVENTS=1 \
+    SHOW_PACKET_EVENTS=0 \
+    SHOW_ERROR_EVENTS=0 \
+    SHOW_DAEMON_EVENTS=0 \
     UNIX="" \
     PORT=7000 \
     HOST=""
 
 WORKDIR /usr/src/app
 
-COPY py-json-stdout.py .
-COPY nDPIsrvd.py .
+COPY . .
 
-CMD [ "pypy3", "-u", "./py-json-stdout.py"]
+RUN pip install .
+
+CMD [ "pypy", "-u", "heidpi/heiDPI_logger.py"]

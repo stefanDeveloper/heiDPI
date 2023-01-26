@@ -1,0 +1,29 @@
+appName: heiDPI
+
+logging:
+  level: INFO
+  filemode: w # a for append, will not override current file
+  filename: heiDPI.log
+  encoding: utf-8
+  format: "%(asctime)s %(levelname)s:%(message)s"
+  datefmt: "%Y-%d-%mT%I:%M:%S"
+
+flow_event:
+  ignore_fields:
+    - flow_id
+  flow_event_name:
+    - update
+    - end
+    - idle
+
+daemon_event:
+  ignore_fields: []
+  daemon_event_name: []
+
+packet_event:
+  ignore_fields: []
+  packet_event_name: []
+
+error_event:
+  ignore_fields: []
+  error_event_name: []

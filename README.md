@@ -1,9 +1,9 @@
-[![Build](https://github.com/stefanDeveloper/heiStream/actions/workflows/docker-image.yml/badge.svg)](https://github.com/stefanDeveloper/heiStream/actions/workflows/docker-image.yml) [![GitHub Stars](https://img.shields.io/github/stars/stefanDeveloper/heistream)](https://github.com/stefanDeveloper/heistream/) [![Docker Pulls](https://img.shields.io/docker/pulls/stefan96/heistream-ndpid.svg)](https://hub.docker.com/r/stefan96/heistream-ndpid/) ![Docker Stars](https://img.shields.io/docker/stars/stefan96/heistream-ndpid)
+[![Build](https://github.com/stefanDeveloper/heidpi/actions/workflows/docker-image.yml/badge.svg)](https://github.com/stefanDeveloper/heidpi/actions/workflows/docker-image.yml) [![GitHub Stars](https://img.shields.io/github/stars/stefanDeveloper/heidpi)](https://github.com/stefanDeveloper/heidpi/) [![Docker Pulls](https://img.shields.io/docker/pulls/stefan96/heidpi.svg)](https://hub.docker.com/r/stefan96/heidpi/) ![Docker Stars](https://img.shields.io/docker/stars/stefan96/heidpi)
 
 
-# heiStream - nDPId Docker Image
+# heidpi - nDPId Docker Image
 
-nDPId Docker Image for deep packet inspection. As described in [nDPId](https://github.com/utoni/nDPId/blob/main/README.md), we split the image into producer and consumer image for a more generic purpose. For the producer, the image starts the UNIX and UDP socket and nDPId respectively. Via environment variables, users can   
+nDPId Docker Image for deep packet inspection. As described in [nDPId](https://github.com/utoni/nDPId/blob/main/README.md), we split the image into producer and consumer image for a more generic purpose. For the producer, the image starts the UNIX and UDP socket and nDPId respectively. Via environment variables, users can adapt the nDPId daemon and nDPIsrvd. As by now, we support all current nDPId parameters.
 
 ## Getting Started
 
@@ -22,15 +22,15 @@ In order to run this container you'll need docker installed.
 Pull images:
 
 ```sh
-docker pull stefan96/heistream-ndpid:producer-latest
-docker pull stefan96/heistream-ndpid:consumer-latest
+docker pull stefan96/heidpi:producer-latest
+docker pull stefan96/heidpi:consumer-latest
 ```
 
 Run producer and consumer separately from each other using UDP socket:
 
 ```sh
-docker run -p 127.0.0.1:7000:7000 --net host stefan96/heistream-ndpid:producer-latest
-docker run -e HOST=127.0.0.1 --net host stefan96/heistream-ndpid:consumer-latest
+docker run -p 127.0.0.1:7000:7000 --net host stefan96/heidpi:producer-latest
+docker run -e HOST=127.0.0.1 --net host stefan96/heidpi:consumer-latest
 ```
 
 or use the `docker-compose.yml`:
@@ -42,8 +42,8 @@ docker-compose up
 Additionally, you use a UNIX socket:
 
 ```sh
-docker run -v ${PWD}/heistream-data:/tmp/ --net host stefan96/heistream-ndpid:producer-latest
-docker run -v ${PWD}/heistream-data:/tmp/ -v ${PWD}/heistream-logs:/var/log -e UNIX=/tmp/nDPIsrvd-daemon-distributor.sock --net host stefan96/heistream-ndpid:consumer-latest
+docker run -v ${PWD}/heidpi-data:/tmp/ --net host stefan96/heidpi:producer-latest
+docker run -v ${PWD}/heidpi-data:/tmp/ -v ${PWD}/heidpi-logs:/var/log -e UNIX=/tmp/nDPIsrvd-daemon-distributor.sock --net host stefan96/heidpi:consumer-latest
 ```
 
 ## Environment Variables
@@ -60,7 +60,7 @@ docker run -v ${PWD}/heistream-data:/tmp/ -v ${PWD}/heistream-logs:/var/log -e U
 | `SSL_SHA1_URL` | `string` | https://sslbl.abuse.ch/blacklist/sslblacklist.csv |
 | `TUNE_PARAM` | `string` | |
 
-For `TUNE_PARAM`, concatinate the subopts below like `-o max-flows-per-thread=2024 -o ....`
+For `TUNE_PARAM`, concatinate the subopts below like `max-flows-per-thread=2024 ....`
 
 ```
 subopts:

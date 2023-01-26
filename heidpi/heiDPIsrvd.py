@@ -1,24 +1,10 @@
 #!/usr/bin/env python3
 
-import argparse
-import array
 import json
 import re
 import os
-import stat
 import socket
 import sys
-
-try:
-    from colorama import Back, Fore, Style
-    USE_COLORAMA=True
-except ImportError:
-    sys.stderr.write('Python module colorama not found, using fallback.\n')
-    USE_COLORAMA=False
-
-DEFAULT_HOST = '127.0.0.1'
-DEFAULT_PORT = 7000
-DEFAULT_UNIX = '/tmp/ndpid-distributor.sock'
 
 NETWORK_BUFFER_MIN_SIZE = 6 # NETWORK_BUFFER_LENGTH_DIGITS + 1
 NETWORK_BUFFER_MAX_SIZE = 33792 # Please keep this value in sync with the one in config.h
@@ -26,67 +12,6 @@ nDPId_PACKETS_PLEN_MAX = 8192 # Please keep this value in sync with the one in c
 
 PKT_TYPE_ETH_IP4 = 0x0800
 PKT_TYPE_ETH_IP6 = 0x86DD
-
-
-class TermColor:
-    HINT    = '\033[33m'
-    WARNING = '\033[93m'
-    FAIL    = '\033[91m'
-    BOLD    = '\033[1m'
-    END     = '\033[0m'
-    BLINK   = '\x1b[5m'
-
-    if USE_COLORAMA is True:
-        COLOR_TUPLES = [ (Fore.BLUE, [Back.RED, Back.MAGENTA, Back.WHITE]),
-                         (Fore.CYAN, [Back.MAGENTA, Back.RED, Back.WHITE]),
-                         (Fore.GREEN, [Back.YELLOW, Back.RED, Back.MAGENTA, Back.WHITE]),
-                         (Fore.MAGENTA, [Back.CYAN, Back.BLUE, Back.WHITE]),
-                         (Fore.RED, [Back.GREEN, Back.BLUE, Back.WHITE]),
-                         (Fore.WHITE, [Back.BLACK, Back.MAGENTA, Back.RED, Back.BLUE]),
-                         (Fore.YELLOW, [Back.RED, Back.CYAN, Back.BLUE, Back.WHITE]),
-                         (Fore.LIGHTBLUE_EX, [Back.LIGHTRED_EX, Back.RED]),
-                         (Fore.LIGHTCYAN_EX, [Back.LIGHTMAGENTA_EX, Back.MAGENTA]),
-                         (Fore.LIGHTGREEN_EX, [Back.LIGHTYELLOW_EX, Back.YELLOW]),
-                         (Fore.LIGHTMAGENTA_EX, [Back.LIGHTCYAN_EX, Back.CYAN]),
-                         (Fore.LIGHTRED_EX, [Back.LIGHTGREEN_EX, Back.GREEN]),
-                         (Fore.LIGHTWHITE_EX, [Back.LIGHTBLACK_EX, Back.BLACK]),
-                         (Fore.LIGHTYELLOW_EX, [Back.LIGHTRED_EX, Back.RED]) ]
-
-    @staticmethod
-    def disableColor():
-        TermColor.HINT    = ''
-        TermColor.WARNING = ''
-        TermColor.FAIL    = ''
-        TermColor.BOLD    = ''
-        TermColor.END     = ''
-        TermColor.BLINK   = ''
-        global USE_COLORAMA
-        USE_COLORAMA      = False
-
-    @staticmethod
-    def calcColorHash(string):
-        h = 0
-        for char in string:
-            h += ord(char)
-        return h
-
-    @staticmethod
-    def getColorsByHash(string):
-        h = TermColor.calcColorHash(string)
-        tuple_index = h % len(TermColor.COLOR_TUPLES)
-        bg_tuple_index = h % len(TermColor.COLOR_TUPLES[tuple_index][1])
-        return (TermColor.COLOR_TUPLES[tuple_index][0],
-                TermColor.COLOR_TUPLES[tuple_index][1][bg_tuple_index])
-
-    @staticmethod
-    def setColorByString(string):
-        global USE_COLORAMA
-        if USE_COLORAMA is True:
-            fg_color, bg_color = TermColor.getColorsByHash(string)
-            color_hash = TermColor.calcColorHash(string)
-            return '{}{}{}{}{}'.format(Style.BRIGHT, fg_color, bg_color, string, Style.RESET_ALL)
-        else:
-            return '{}{}{}'.format(TermColor.BOLD, string, TermColor.END)
 
 class ThreadData:
     pass
@@ -476,52 +401,15 @@ class nDPIsrvdSocket:
             raise nDPIsrvdException('Failed lines > 0: {}'.format(len(self.failed_lines)))
         return self.flow_mgr.verifyFlows()
 
-def defaultArgumentParser(desc='nDPIsrvd Python Interface',
-                          help_formatter=argparse.ArgumentDefaultsHelpFormatter):
-    parser = argparse.ArgumentParser(description=desc, formatter_class=help_formatter)
-    parser.add_argument('--host', type=str, help='nDPIsrvd host IP')
-    parser.add_argument('--port', type=int, default=DEFAULT_PORT, help='nDPIsrvd TCP port')
-    parser.add_argument('--unix', type=str, help='nDPIsrvd unix socket path')
-    return parser
-
 def toSeconds(usec):
     return usec / (1000 * 1000)
-
-def validateAddress(args):
-    tcp_addr_set = False
-    address = None
-
-    if args.host is None:
-        address_tcpip = (DEFAULT_HOST, args.port)
-    else:
-        address_tcpip = (args.host, args.port)
-        tcp_addr_set = True
-
-    if args.unix is None:
-        address_unix = DEFAULT_UNIX
-    else:
-        address_unix = args.unix
-
-    possible_sock_mode = 0
-    try:
-        possible_sock_mode = os.stat(address_unix).st_mode
-    except:
-        pass
-    if tcp_addr_set == False and stat.S_ISSOCK(possible_sock_mode):
-        address = address_unix
-    else:
-        address = address_tcpip
-
-    return address
 
 global schema
 schema = {'packet_event_schema' : None, 'error_event_schema' : None, 'daemon_event_schema' : None, 'flow_event_schema' : None}
 
 def initSchemaValidator(schema_dirs=[]):
     if len(schema_dirs) == 0:
-        schema_dirs += [os.path.dirname(sys.argv[0]) + '/../../schema']
-        schema_dirs += [os.path.dirname(sys.argv[0]) + '/../share/nDPId']
-        schema_dirs += [sys.base_prefix + '/share/nDPId']
+        schema_dirs += [os.path.dirname(sys.argv[0]) + '/schema']
 
     for key in schema:
         for schema_dir in schema_dirs:
@@ -529,6 +417,7 @@ def initSchemaValidator(schema_dirs=[]):
                 with open(schema_dir + '/' + str(key) + '.json', 'r') as schema_file:
                     schema[key] = json.load(schema_file)
             except FileNotFoundError:
+                print(f"No schema in {schema_dir}")
                 continue
             else:
                 break

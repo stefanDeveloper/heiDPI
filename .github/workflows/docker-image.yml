@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Build Producer Image
-      run: docker build . --file Dockerfile.producer --tag stefan96/heistream-ndpid:latest --tag stefan96/heistream-ndpid:producer-latest
+      run: docker build . --file Dockerfile.producer --tag stefan96/heidpi:latest --tag stefan96/heidpi:producer-latest
 
     - name: Build Consumer Image
-      run: docker build . --file Dockerfile.consumer --tag stefan96/heistream-ndpid:consumer-latest
+      run: docker build . --file Dockerfile.consumer --tag stefan96/heidpi:consumer-latest

@@ -2,7 +2,7 @@
 
 MY_INFO="\
 ###########################################
-###          heidpi nDPId Image      ###
+###             heiDPI Image            ###
 ###########################################
 
 Starting services
@@ -42,7 +42,7 @@ fi
 
 [[ $MAX_THREADS -gt 0 ]] && params_ndpid+=(-C $MAX_THREADS)
 
-[[ $FLOW_ANALYSIS = true ]] && params_ndpid+=(-A)
+[[ $FLOW_ANALYSIS = 1 ]] && params_ndpid+=(-A)
 
 if [[ -n $TUNE_PARAM ]]; then
     for word in $(echo $TUNE_PARAM | tr "," "\n"); do
@@ -62,7 +62,7 @@ fi
 ### Start nDPIsrvd ###
 ###########################################
 
-echo "Start nDPIsrvd"
+echo "Start nDPIsrvd..."
 
 /root/nDPIsrvd -p /tmp/nDPIsrvd-daemon.pid \
             -c /tmp/nDPIsrvd-daemon-collector.sock \
@@ -77,7 +77,7 @@ echo "Start nDPIsrvd"
 ### Start nDPId ###
 ###########################################
 
-echo "Start nDPId"
+echo "Start nDPId..."
 
 exec /root/nDPId -p /tmp/nDPId-daemon.pid \
             -c /tmp/nDPIsrvd-daemon-collector.sock \

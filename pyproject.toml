@@ -1,0 +1,27 @@
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "heiDPI"
+version = "0.0.1"
+authors = [
+  { name="Stefan Machmeier", email="stefan.machmeier@uni-heidelberg.de" },
+]
+description = "nDPId consumer implementation"
+readme = "README.md"
+license = { file="LICENSE" }
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: European Union Public Licence 1.2 (EUPL 1.2)",
+    "Operating System :: OS Independent",
+]
+
+[project.scripts]
+heiDPI = "heidpi.heiDPI_logger:main"
+
+[project.urls]
+"Homepage" = "https://github.com/stefanDeveloper/heiDPI"
+"Bug Tracker" = "https://github.com/stefanDeveloper/heiDPI/issues"

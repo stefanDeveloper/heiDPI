@@ -55,31 +55,33 @@ docker run -v ${PWD}/heidpi-data:/tmp/ -v ${PWD}/heidpi-logs:/var/log -e UNIX=/t
 | `INTERFACE` | `string` | |
 | `PORT` | `int` | 7000 |
 | `MAX_THREADS` | `int` | 4 |
-| `FLOW_ANALYSIS` | `boolean` | false |
+| `FLOW_ANALYSIS` | `boolean` | 0 |
 | `JA3_URL` | `string` | |
 | `SSL_SHA1_URL` | `string` | |
 | `TUNE_PARAM` | `string` | |
+| `PCAP_FILTER` | `string` | |
+| `NDPI_CUSTOM_PROTOCOLS` | `string` | |
+| `NDPI_CUSTOM_CATEGORIES` | `string` | |
+| `HOSTNAME` | `string` | |
 
 For `TUNE_PARAM`, concatenate the subopts below like `max-flows-per-thread=2024;max-idle-flows-per-thread=64;...`
+As derived from [nDPId Tuning](https://github.com/utoni/nDPId/blob/main/README.md#ndpid-tuning):
 
-```
-subopts:
-    max-flows-per-thread = 2048
-    max-idle-flows-per-thread = 64
-    max-reader-threads = 16
-    daemon-status-interval = 600000000
-    flow-scan-interval = 10000000
-    generic-max-idle-time = 600000000
-    icmp-max-idle-time = 120000000
-    udp-max-idle-time = 180000000
-    tcp-max-idle-time = 3145032704
-    tcp-max-post-end-flow-time = 120000000
-    max-packets-per-flow-to-send = 15
-    max-packets-per-flow-to-process = 32
-    max-packets-per-flow-to-analyse = 32
-    error-event-threshold-n = 16
-    error-event-threshold-time = 10000000
-```
+ * `max-flows-per-thread` (N, caution advised): affects max. memory usage
+ * `max-idle-flows-per-thread` (N, safe): max. allowed idle flows which memory get's free'd after `flow-scan-interval`
+ * `max-reader-threads` (N, safe): amount of packet processing threads, every thread can have a max. of `max-flows-per-thread` flows
+ * `daemon-status-interval` (ms, safe): specifies how often daemon event `status` will be generated
+ * `compression-scan-interval` (ms, untested): specifies how often `nDPId` should scan for inactive flows ready for compression
+ * `compression-flow-inactivity` (ms, untested): the earliest period of time that must elapse before `nDPId` may consider compressing a flow that did neither send nor receive any data
+ * `flow-scan-interval` (ms, safe): min. amount of time after which `nDPId` will scan for idle or long-lasting flows
+ * `generic-max-idle-time` (ms, untested): time after which a non TCP/UDP/ICMP flow will time out
+ * `icmp-max-idle-time` (ms, untested): time after which an ICMP flow will time out
+ * `udp-max-idle-time` (ms, caution advised): time after which an UDP flow will time out
+ * `tcp-max-idle-time` (ms, caution advised): time after which a TCP flow will time out
+ * `tcp-max-post-end-flow-time` (ms, caution advised): a TCP flow that received a FIN or RST will wait that amount of time before flow tracking will be stopped and the flow memory free'd
+ * `max-packets-per-flow-to-send` (N, safe): max. `packet-flow` events that will be generated for the first N packets of each flow
+ * `max-packets-per-flow-to-process` (N, caution advised): max. packets that will be processed by `libnDPI`
+ * `max-packets-per-flow-to-analyze` (N, safe): max. packets to analyze before sending an `analyse` event, requires `-A`
 
 ### Consumer
 

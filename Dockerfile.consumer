@@ -1,6 +1,6 @@
 FROM pypy:latest
 
-ENV JSON_PATH="/var/log" \
+ENV WRITE="/var/log" \
     SHOW_FLOW_EVENTS=1 \
     SHOW_PACKET_EVENTS=0 \
     SHOW_ERROR_EVENTS=0 \
@@ -11,8 +11,13 @@ ENV JSON_PATH="/var/log" \
 
 WORKDIR /usr/src/app
 
-COPY . .
+COPY heidpi ./ \
+     config.yml ./ \
+     setup.py ./ \
+     LICENSE ./ \
+     README.md ./ \
+     pyproject.toml ./
 
 RUN pip install .
 
-CMD [ "pypy", "-u", "heidpi/heiDPI_logger.py"]
+CMD [ "heiDPI"]

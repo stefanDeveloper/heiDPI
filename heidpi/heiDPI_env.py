@@ -13,7 +13,6 @@ class EnvDefault(argparse.Action):
         if not default and envvar:
             if envvar in os.environ:
                 default = os.environ[envvar]
-                print(default)
         if required and default:
             required = False
         argparse.Action.__init__(self, default=default, required=required, *args, **kwargs)

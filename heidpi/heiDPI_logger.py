@@ -25,38 +25,47 @@ def file_path(string):
     else:
        raise FileNotFoundError(string)
 
-def onJsonLineRecvd(json_dict, instance, current_flow, global_user_data):
+def get_timestamp():
     date_time = datetime.datetime.fromtimestamp(datetime.datetime.now().timestamp())
-    str_date_time = date_time.strftime(App.config()["logging"]["datefmt"].get())
-    json_dict['timestamp'] = str_date_time
+    return date_time.strftime(App.config()["logging"]["datefmt"].get())
+
+def onJsonLineRecvd(json_dict, instance, current_flow, global_user_data):
     if SHOW_ERROR_EVENTS and ("error_event_id" in json_dict):
         if json_dict["error_event_name"] in App.config()["error_event"]["error_event_name"].get():
-            if App.config()["error_event"]["ignore_fields"].get() != []:   
-                list(map(json_dict.pop, App.config()["error_event"]["ignore_fields"].get()))
+            json_dict['timestamp'] = get_timestamp()
+            ignore_fields = App.config()["error_event"]["ignore_fields"].get()
+            if ignore_fields != []:   
+                list(map(json_dict.pop, ignore_fields, [None] * len(ignore_fields)))
 
             with open(f'{JSON_PATH}/error_event.json', "a") as f:
                 json.dump(json_dict, f)
                 f.write("\n")
     if SHOW_PACKET_EVENTS and ("packet_event_id" in json_dict):
         if json_dict["packet_event_name"] in App.config()["packet_event"]["packet_event_name"].get():
-            if App.config()["packet_event"]["ignore_fields"].get() != []:   
-                list(map(json_dict.pop, App.config()["packet_event"]["ignore_fields"].get()))
+            json_dict['timestamp'] = get_timestamp()
+            ignore_fields = App.config()["packet_event"]["ignore_fields"].get()
+            if ignore_fields != []:   
+                list(map(json_dict.pop, ignore_fields, [None] * len(ignore_fields)))
 
             with open(f'{JSON_PATH}/{App.config()["error_event"]["filename"]}.json', "a") as f:
                 json.dump(json_dict, f)
                 f.write("\n")
     if SHOW_FLOW_EVENTS and ("flow_event_id" in json_dict):
         if json_dict["flow_event_name"] in App.config()["flow_event"]["flow_event_name"].get():
-            if App.config()["flow_event"]["ignore_fields"].get() != []:   
-                list(map(json_dict.pop, App.config()["flow_event"]["ignore_fields"].get()))
+            json_dict['timestamp'] = get_timestamp()
+            ignore_fields = App.config()["flow_event"]["ignore_fields"].get()
+            if ignore_fields != []:   
+                list(map(json_dict.pop, ignore_fields, [None] * len(ignore_fields)))
 
             with open(f'{JSON_PATH}/{App.config()["flow_event"]["filename"]}.json', "a") as f:
                 json.dump(json_dict, f)
                 f.write("\n")
     if SHOW_DAEMON_EVENTS and ("daemon_event_id" in json_dict):
         if json_dict["daemon_event_name"] in App.config()["daemon_event"]["daemon_event_name"].get():
-            if App.config()["daemon_event"]["ignore_fields"].get() != []:   
-                list(map(json_dict.pop, App.config()["daemon_event"]["ignore_fields"].get()))
+            json_dict['timestamp'] = get_timestamp()
+            ignore_fields = App.config()["daemon_event"]["ignore_fields"].get()
+            if ignore_fields != []:   
+                list(map(json_dict.pop, ignore_fields, [None] * len(ignore_fields)))
 
             with open(f'{JSON_PATH}/{App.config()["daemon_event"]["filename"]}.json', "a") as f:
                 json.dump(json_dict, f)

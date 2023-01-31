@@ -1,4 +1,4 @@
-FROM pypy:latest
+FROM python:latest
 
 ENV WRITE="/var/log" \
     SHOW_FLOW_EVENTS=1 \
@@ -16,8 +16,10 @@ COPY heidpi ./ \
      setup.py ./ \
      LICENSE ./ \
      README.md ./ \
+     requirements.txt ./ \
      pyproject.toml ./
 
-RUN pip install .
+RUN pip install . \
+    pip install -r requirements.txt
 
 CMD [ "heiDPI"]

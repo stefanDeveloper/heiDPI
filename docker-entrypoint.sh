@@ -18,7 +18,7 @@ params_ndpid=()
 
 ###########################################
 ### Create params for nDPIsrvd ###
-###########################################
+###########################################  
 
 [[ $MAX_BUFFERED_LINES -gt 0 ]] && params_ndpisrvd+=(-C $MAX_BUFFERED_LINES)
 
@@ -70,8 +70,6 @@ echo "Start nDPIsrvd..."
             -d \
             -L /tmp/nDPIsrvd.log \
             "${params_ndpisrvd[@]}"
-
-echo "${params_ndpid[@]}"
 
 ###########################################
 ### Start nDPId ###

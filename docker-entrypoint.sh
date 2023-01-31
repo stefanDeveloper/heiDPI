@@ -40,8 +40,6 @@ fi
 
 [[ -n $INTERFACE ]] && params_ndpid+=(-i $INTERFACE)
 
-[[ $MAX_THREADS -gt 0 ]] && params_ndpid+=(-C $MAX_THREADS)
-
 [[ $FLOW_ANALYSIS = 1 ]] && params_ndpid+=(-A)
 
 if [[ -n $TUNE_PARAM ]]; then
@@ -72,6 +70,8 @@ echo "Start nDPIsrvd..."
             -d \
             -L /tmp/nDPIsrvd.log \
             "${params_ndpisrvd[@]}"
+
+echo "${params_ndpid[@]}"
 
 ###########################################
 ### Start nDPId ###

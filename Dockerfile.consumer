@@ -1,4 +1,4 @@
-FROM python:latest
+FROM pypy:latest
 
 ENV WRITE="/var/log" \
     SHOW_FLOW_EVENTS=1 \

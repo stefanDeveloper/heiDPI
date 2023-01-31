@@ -4,6 +4,7 @@ import json
 import stat
 import logging
 import datetime
+import copy
 
 from heidpi import App
 from heidpi import heiDPIsrvd
@@ -30,46 +31,51 @@ def get_timestamp():
     return date_time.strftime(App.config()["logging"]["datefmt"].get())
 
 def onJsonLineRecvd(json_dict, instance, current_flow, global_user_data):
-    if SHOW_ERROR_EVENTS and ("error_event_id" in json_dict):
-        if json_dict["error_event_name"] in App.config()["error_event"]["error_event_name"].get():
-            json_dict['timestamp'] = get_timestamp()
+    json_dict_copy = copy.deepcopy(json_dict)
+    if SHOW_ERROR_EVENTS and ("error_event_id" in json_dict_copy):
+        if json_dict_copy["error_event_name"] in App.config()["error_event"]["error_event_name"].get():
+            json_dict_copy['timestamp'] = get_timestamp()
             ignore_fields = App.config()["error_event"]["ignore_fields"].get()
             if ignore_fields != []:   
-                list(map(json_dict.pop, ignore_fields, [None] * len(ignore_fields)))
+                list(map(json_dict_copy.pop, ignore_fields, [None] * len(ignore_fields)))
 
             with open(f'{JSON_PATH}/error_event.json', "a") as f:
-                json.dump(json_dict, f)
+                json.dump(json_dict_copy, f)
                 f.write("\n")
-    if SHOW_PACKET_EVENTS and ("packet_event_id" in json_dict):
-        if json_dict["packet_event_name"] in App.config()["packet_event"]["packet_event_name"].get():
-            json_dict['timestamp'] = get_timestamp()
+
+    if SHOW_PACKET_EVENTS and ("packet_event_id" in json_dict_copy):
+        if json_dict_copy["packet_event_name"] in App.config()["packet_event"]["packet_event_name"].get():
+            json_dict_copy['timestamp'] = get_timestamp()
             ignore_fields = App.config()["packet_event"]["ignore_fields"].get()
             if ignore_fields != []:   
-                list(map(json_dict.pop, ignore_fields, [None] * len(ignore_fields)))
+                list(map(json_dict_copy.pop, ignore_fields, [None] * len(ignore_fields)))
 
             with open(f'{JSON_PATH}/{App.config()["error_event"]["filename"]}.json', "a") as f:
-                json.dump(json_dict, f)
+                json.dump(json_dict_copy, f)
                 f.write("\n")
-    if SHOW_FLOW_EVENTS and ("flow_event_id" in json_dict):
-        if json_dict["flow_event_name"] in App.config()["flow_event"]["flow_event_name"].get():
-            json_dict['timestamp'] = get_timestamp()
+
+    if SHOW_FLOW_EVENTS and ("flow_event_id" in json_dict_copy):
+        if json_dict_copy["flow_event_name"] in App.config()["flow_event"]["flow_event_name"].get():
+            json_dict_copy['timestamp'] = get_timestamp()
             ignore_fields = App.config()["flow_event"]["ignore_fields"].get()
             if ignore_fields != []:   
-                list(map(json_dict.pop, ignore_fields, [None] * len(ignore_fields)))
+                list(map(json_dict_copy.pop, ignore_fields, [None] * len(ignore_fields)))
 
             with open(f'{JSON_PATH}/{App.config()["flow_event"]["filename"]}.json', "a") as f:
-                json.dump(json_dict, f)
+                json.dump(json_dict_copy, f)
                 f.write("\n")
-    if SHOW_DAEMON_EVENTS and ("daemon_event_id" in json_dict):
-        if json_dict["daemon_event_name"] in App.config()["daemon_event"]["daemon_event_name"].get():
-            json_dict['timestamp'] = get_timestamp()
+
+    if SHOW_DAEMON_EVENTS and ("daemon_event_id" in json_dict_copy):
+        if json_dict_copy["daemon_event_name"] in App.config()["daemon_event"]["daemon_event_name"].get():
+            json_dict_copy['timestamp'] = get_timestamp()
             ignore_fields = App.config()["daemon_event"]["ignore_fields"].get()
             if ignore_fields != []:   
-                list(map(json_dict.pop, ignore_fields, [None] * len(ignore_fields)))
+                list(map(json_dict_copy.pop, ignore_fields, [None] * len(ignore_fields)))
 
             with open(f'{JSON_PATH}/{App.config()["daemon_event"]["filename"]}.json', "a") as f:
-                json.dump(json_dict, f)
+                json.dump(json_dict_copy, f)
                 f.write("\n")
+    del json_dict_copy
     return True
 
 
@@ -117,7 +123,7 @@ def main():
     parser.add_argument('--show-daemon-events', type=int, action=heiDPI_env.env_default('SHOW_DAEMON_EVENTS'), default=0, required=False, help='heiDPI shows daemon events')
     parser.add_argument('--show-packet-events', type=int, action=heiDPI_env.env_default('SHOW_PACKET_EVENTS'), default=0, required=False, help='heiDPI shows packet events')
     parser.add_argument('--show-error-events', type=int, action=heiDPI_env.env_default('SHOW_ERROR_EVENTS'), default=0, required=False, help='heiDPI shows error events')
-    parser.add_argument('--show-flow-events', type=int, action=heiDPI_env.env_default('SHOW_FLOW_EVENTS'), default=1, required=False, help='heiDPI shows flow events')
+    parser.add_argument('--show-flow-events', type=int, action=heiDPI_env.env_default('SHOW_FLOW_EVENTS'), default=0, required=False, help='heiDPI shows flow events')
 
     args = parser.parse_args()
     address = validateAddress(args)

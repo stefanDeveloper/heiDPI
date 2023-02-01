@@ -1,4 +1,4 @@
-FROM alpine:3.14 as builder
+FROM alpine:latest as builder
 
 WORKDIR /root
 RUN apk update && \
@@ -20,11 +20,11 @@ RUN apk update && \
 
 RUN git clone https://github.com/utoni/nDPId.git
 
-COPY config.h nDPId
+# COPY config.h nDPId
 
 RUN cd nDPId && mkdir build && cd build && cmake .. -DBUILD_NDPI=ON && make
 
-FROM alpine:3.14
+FROM alpine:latest
 
 ENV MAX_BUFFERED_LINES=1024 \
     MAX_THREADS=4 \

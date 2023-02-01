@@ -55,7 +55,7 @@ docker run -v ${PWD}/heidpi-data:/tmp/ -v ${PWD}/heidpi-logs:/var/log -e UNIX=/t
 | `INTERFACE` | `string` | |
 | `PORT` | `int` | 7000 |
 | `MAX_THREADS` | `int` | 4 |
-| `FLOW_ANALYSIS` | `boolean` | 0 |
+| `FLOW_ANALYSIS` | `int` | 0 |
 | `JA3_URL` | `string` | |
 | `SSL_SHA1_URL` | `string` | |
 | `TUNE_PARAM` | `string` | |
@@ -89,12 +89,12 @@ As derived from [nDPId Tuning](https://github.com/utoni/nDPId/blob/main/README.m
 |------------------------------|---------|-------------------|
 | `UNIX` | `string` | |
 | `HOST` | `string` | |
-| `PORT` | `string` | 7000 |
+| `PORT` | `int` | 7000 |
 | `JSON_PATH` | `string` | `/var/log/nDPIdsrvd.json` |
-| `SHOW_ERROR_EVENTS` | `boolean` | 0 |
-| `SHOW_DAEMON_EVENTS` | `boolean` | 0 |
-| `SHOW_PACKET_EVENTS` | `boolean` | 0 |
-| `SHOW_FLOW_EVENTS` | `boolean` | 1 |
+| `SHOW_ERROR_EVENTS` | `int` | 0 |
+| `SHOW_DAEMON_EVENTS` | `int` | 0 |
+| `SHOW_PACKET_EVENTS` | `int` | 0 |
+| `SHOW_FLOW_EVENTS` | `int` | 1 |
 | `MAX_BUFFERED_LINES` | `int` | 1024 |
 
 ## License

@@ -61,9 +61,6 @@ def onJsonLineRecvd(json_dict, instance, current_flow, global_user_data):
             if ignore_fields != []:   
                 list(map(json_dict_copy.pop, ignore_fields, [None] * len(ignore_fields)))
 
-            if "ndpi" in json_dict_copy and "flow_risk" in json_dict_copy["ndpi"]:
-                json_dict_copy["ndpi"]["flow_risks"] = list(json_dict_copy["ndpi"]["flow_risk"].values())
-
             with open(f'{JSON_PATH}/{App.config()["flow_event"]["filename"]}.json', "a") as f:
                 json.dump(json_dict_copy, f)
                 f.write("\n")

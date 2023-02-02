@@ -21,7 +21,7 @@ RUN apk update && \
 
 RUN git clone https://github.com/utoni/nDPId.git
 
-# COPY config.h nDPId
+COPY config.h nDPId
 
 RUN cd nDPId && mkdir build && cd build && cmake .. -DBUILD_NDPI=ON && make
 

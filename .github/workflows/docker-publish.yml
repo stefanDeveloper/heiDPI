@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Docker Publisch CI
 
 on:
   schedule:
@@ -26,16 +26,15 @@ jobs:
         docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
 
     - name: Build Producer Image
-      run: docker build . --file Dockerfile.producer --tag stefan96/heidpi:latest --tag stefan96/heidpi:producer-latest
+      run: docker build . --file Dockerfile.producer --tag stefan96/heidpi-producer:${{ steps.meta.outputs.tags }}
 
     - name: Build Consumer Image
-      run: docker build . --file Dockerfile.consumer --tag stefan96/heidpi:consumer-latest
+      run: docker build . --file Dockerfile.consumer --tag stefan96/heidpi-consumer:${{ steps.meta.outputs.tags }}
 
     - name: Docker Push
       run: |
-        docker push stefan96/heidpi:producer-latest
-        docker push stefan96/heidpi:consumer-latest
-        docker push stefan96/heidpi:latest
+        docker push stefan96/heidpi-producer:${{ steps.meta.outputs.tags }}
+        docker push stefan96/heidpi-consumer:${{ steps.meta.outputs.tags }}
 
     - name: Docker Hub Description
       uses: peter-evans/dockerhub-description@v3

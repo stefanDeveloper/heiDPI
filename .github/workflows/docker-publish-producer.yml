@@ -1,4 +1,4 @@
-name: Docker Publisch CI
+name: Docker Publisch Producer CI
 
 on:
   schedule:

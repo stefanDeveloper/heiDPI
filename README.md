@@ -1,4 +1,8 @@
-[![Build](https://github.com/stefanDeveloper/heidpi/actions/workflows/docker-image.yml/badge.svg)](https://github.com/stefanDeveloper/heidpi/actions/workflows/docker-image.yml) [![GitHub Stars](https://img.shields.io/github/stars/stefanDeveloper/heidpi)](https://github.com/stefanDeveloper/heidpi/) [![Docker Pulls](https://img.shields.io/docker/pulls/stefan96/heidpi.svg)](https://hub.docker.com/r/stefan96/heidpi/) ![Docker Stars](https://img.shields.io/docker/stars/stefan96/heidpi)
+
+[![Build](https://github.com/stefanDeveloper/heidpi/actions/workflows/docker-publish-producer.yml/badge.svg)](https://github.com/stefanDeveloper/heidpi/actions/workflows/docker-publish-producer.yml) [![GitHub Stars](https://img.shields.io/github/stars/stefanDeveloper/heidpi)](https://github.com/stefanDeveloper/heidpi/) [![Docker Pulls](https://img.shields.io/docker/pulls/stefan96/heidpi-producer.svg)](https://hub.docker.com/r/stefan96/heidpi-producer/) ![Docker Stars](https://img.shields.io/docker/stars/stefan96/heidpi-producer)
+
+
+[![Build](https://github.com/stefanDeveloper/heidpi/actions/workflows/docker-publish-consumer.yml/badge.svg)](https://github.com/stefanDeveloper/heidpi/actions/workflows/docker-publish-consumer.yml) [![GitHub Stars](https://img.shields.io/github/stars/stefanDeveloper/heidpi)](https://github.com/stefanDeveloper/heidpi/) [![Docker Pulls](https://img.shields.io/docker/pulls/stefan96/heidpi-consumer.svg)](https://hub.docker.com/r/stefan96/heidpi-consumer/) ![Docker Stars](https://img.shields.io/docker/stars/stefan96/heidpi-consumer)
 
 
 # heidpi - nDPId Docker Image
@@ -22,15 +26,15 @@ In order to run this container you'll need docker installed.
 Pull images:
 
 ```sh
-docker pull stefan96/heidpi:producer-latest
-docker pull stefan96/heidpi:consumer-latest
+docker pull stefan96/heidpi-producer:main
+docker pull stefan96/heidpi-consumer:main
 ```
 
 Run producer and consumer separately from each other using UDP socket:
 
 ```sh
-docker run -p 127.0.0.1:7000:7000 --net host stefan96/heidpi:producer-latest
-docker run -e HOST=127.0.0.1 --net host stefan96/heidpi:consumer-latest
+docker run -p 127.0.0.1:7000:7000 --net host stefan96/heidpi-producer:main
+docker run -e HOST=127.0.0.1 --net host stefan96/heidpi-consumer:main
 ```
 
 or use the `docker-compose.yml`:
@@ -42,8 +46,8 @@ docker-compose up
 Additionally, you use a UNIX socket:
 
 ```sh
-docker run -v ${PWD}/heidpi-data:/tmp/ --net host stefan96/heidpi:producer-latest
-docker run -v ${PWD}/heidpi-data:/tmp/ -v ${PWD}/heidpi-logs:/var/log -e UNIX=/tmp/nDPIsrvd-daemon-distributor.sock --net host stefan96/heidpi:consumer-latest
+docker run -v ${PWD}/heidpi-data:/tmp/ --net host stefan96/heidpi-producer:main
+docker run -v ${PWD}/heidpi-data:/tmp/ -v ${PWD}/heidpi-logs:/var/log -e UNIX=/tmp/nDPIsrvd-daemon-distributor.sock --net host stefan96/heidpi-consumer:main
 ```
 
 ## Environment Variables

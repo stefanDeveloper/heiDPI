@@ -1,12 +1,12 @@
 version: "3.9"
 services:
   consumer:
-    image: stefan96/heidpi:consumer-latest
+    image: stefan96/heidpi-consumer:main
     volumes:
       - ${PWD}/heidpi-data:/var/log/
     network_mode: host
     depends_on:
       - producer
   producer:
-    image: stefan96/heidpi:producer-latest
+    image: stefan96/heidpi-producer:main
     network_mode: host

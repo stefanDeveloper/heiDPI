@@ -1,11 +1,7 @@
-
-[![Build](https://github.com/stefanDeveloper/heidpi/actions/workflows/docker-publish-producer.yml/badge.svg)](https://github.com/stefanDeveloper/heidpi/actions/workflows/docker-publish-producer.yml) [![GitHub Stars](https://img.shields.io/github/stars/stefanDeveloper/heidpi)](https://github.com/stefanDeveloper/heidpi/) [![Docker Pulls](https://img.shields.io/docker/pulls/stefan96/heidpi-producer.svg)](https://hub.docker.com/r/stefan96/heidpi-producer/) ![Docker Stars](https://img.shields.io/docker/stars/stefan96/heidpi-producer)
-
-
 [![Build](https://github.com/stefanDeveloper/heidpi/actions/workflows/docker-publish-consumer.yml/badge.svg)](https://github.com/stefanDeveloper/heidpi/actions/workflows/docker-publish-consumer.yml) [![GitHub Stars](https://img.shields.io/github/stars/stefanDeveloper/heidpi)](https://github.com/stefanDeveloper/heidpi/) [![Docker Pulls](https://img.shields.io/docker/pulls/stefan96/heidpi-consumer.svg)](https://hub.docker.com/r/stefan96/heidpi-consumer/) ![Docker Stars](https://img.shields.io/docker/stars/stefan96/heidpi-consumer)
 
 
-# heiDPI - nDPId Docker Image
+# heiDPI Consumer - nDPId Docker Image
 
 nDPId Docker Image for deep packet inspection. As described in [nDPId](https://github.com/utoni/nDPId/blob/main/README.md), we split the image into producer and consumer image for a more generic purpose. For the producer, the image starts the UNIX and UDP socket and nDPId respectively. Via environment variables, users can adapt the nDPId daemon and nDPIsrvd. As by now, we support all current nDPId parameters.
 
@@ -50,12 +46,69 @@ docker run -v ${PWD}/heidpi-data:/tmp/ --net host stefan96/heidpi-producer:main
 docker run -v ${PWD}/heidpi-data:/tmp/ -v ${PWD}/heidpi-logs:/var/log -e UNIX=/tmp/nDPIsrvd-daemon-distributor.sock --net host stefan96/heidpi-consumer:main
 ```
 
-## Configuration
+## Environment Variables
 
-For a more detail view on how to customize your images, see:
+### Consumer
 
-- [Producer](./README.producer.md)
-- [Consumer](./README.consumer.md)
+| Variable                     | Type    | Default           |
+|------------------------------|---------|-------------------|
+| `UNIX` | `string` | |
+| `HOST` | `string` | |
+| `PORT` | `int` | 7000 |
+| `JSON_PATH` | `string` | `/var/log/nDPIdsrvd.json` |
+| `SHOW_ERROR_EVENTS` | `int` | 0 |
+| `SHOW_DAEMON_EVENTS` | `int` | 0 |
+| `SHOW_PACKET_EVENTS` | `int` | 0 |
+| `SHOW_FLOW_EVENTS` | `int` | 1 |
+| `MAX_BUFFERED_LINES` | `int` | 1024 |
+
+### Config file
+
+You can change the default configuration by mounting a config file `/usr/src/app/config.yml`.
+
+```yaml
+appName: heiDPI
+
+logging:
+  level: INFO
+  encoding: utf-8
+  format: "%(asctime)s %(levelname)s:%(message)s"
+  datefmt: "%Y-%m-%dT%I:%M:%S"
+  # filemode: w # a for append, will not override current file
+  # filename: heiDPI.log
+
+flow_event:
+  ignore_fields: []
+  flow_event_name:
+    - update
+    - end
+    - idle
+    - detected
+  filename: flow_event
+  threads: 25
+
+daemon_event:
+  ignore_fields: []
+  daemon_event_name:
+    - init
+    - status
+  filename: daemon_event
+  threads: 25
+
+packet_event:
+  ignore_fields: []
+  packet_event_name:
+    - packet-flow
+  filename: packet_event
+  threads: 25
+
+error_event:
+  ignore_fields: []
+  error_event_name:
+    - error-flow
+  filename: error_event
+  threads: 25
+```
 
 ## License
 

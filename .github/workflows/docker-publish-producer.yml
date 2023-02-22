@@ -82,6 +82,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: ${{ env.IMAGE_NAME }}
           short-description: ${{ github.event.repository.description }}
+          readme-filepath: ./README.producer.md
 
 
       # Sign the resulting Docker image digest except on PRs.

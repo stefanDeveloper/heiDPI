@@ -8,8 +8,6 @@ from confuse.core import ConfigView
 class App:
     __conf = None
     def __init__(self, path) -> None:
-        assert (os.path.isfile(path), "Path is not a file")
-
         source = confuse.YamlSource(path)
         App.__conf = confuse.RootView([source])
 

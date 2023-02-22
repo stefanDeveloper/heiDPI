@@ -33,43 +33,34 @@ def get_timestamp():
     return date_time.strftime(LOGGING_CONFIG["datefmt"])
 
 def heidpi_process_packet_events(json_dict, instance, current_flow, global_user_data):
-    json_dict_copy = copy.deepcopy(json_dict)
-    if SHOW_PACKET_EVENTS and ("packet_event_id" in json_dict_copy):
-        if json_dict_copy["packet_event_name"] in PACKET_CONFIG["packet_event_name"]:
-            POOL_PACKET.submit(heidpi_log_event, PACKET_CONFIG, json_dict_copy)
+    POOL_PACKET.submit(heidpi_log_event, PACKET_CONFIG, json_dict, SHOW_PACKET_EVENTS, "packet_event_id", "packet_event_name")
     return True
 
 def heidpi_process_flow_events(json_dict, instance, current_flow, global_user_data):
-    json_dict_copy = copy.deepcopy(json_dict)
-    if SHOW_FLOW_EVENTS and ("flow_event_id" in json_dict_copy):
-        if json_dict_copy["flow_event_name"] in FLOW_CONFIG["flow_event_name"]:
-            POOL_FLOW.submit(heidpi_log_event, FLOW_CONFIG, json_dict_copy)
+    POOL_FLOW.submit(heidpi_log_event, FLOW_CONFIG, json_dict, SHOW_FLOW_EVENTS, "flow_event_id", "flow_event_name")
     return True
 
 def heidpi_process_daemon_events(json_dict, instance, current_flow, global_user_data):
-    json_dict_copy = copy.deepcopy(json_dict)
-    if SHOW_DAEMON_EVENTS and ("daemon_event_id" in json_dict_copy):
-        if json_dict_copy["daemon_event_name"] in POOL_DAEMON["daemon_event_name"]:
-            POOL_DAEMON.submit(heidpi_log_event, (DAEMON_CONFIG, json_dict_copy))
+    POOL_DAEMON.submit(heidpi_log_event, (DAEMON_CONFIG, json_dict, SHOW_DAEMON_EVENTS, "daemon_event_id", "daemon_event_name"))
     return True
 
 def heidpi_process_error_events(json_dict, instance, current_flow, global_user_data):
-    json_dict_copy = copy.deepcopy(json_dict)
-    if SHOW_ERROR_EVENTS and ("error_event_id" in json_dict_copy):
-        if json_dict_copy["error_event_name"] in ERROR_CONFIG["error_event_name"]:
-            POOL_ERROR.submit(heidpi_log_event, ERROR_CONFIG, json_dict_copy)
+    POOL_ERROR.submit(heidpi_log_event, ERROR_CONFIG, json_dict, SHOW_ERROR_EVENTS, "error_event_id", "error_event_name")
     return True
 
-def heidpi_log_event(config_dict, json_dict):
-    json_dict['timestamp'] = get_timestamp()
-    ignore_fields = config_dict["ignore_fields"]
+def heidpi_log_event(config_dict, json_dict, show_event: bool, event_id: str, event_name: str):
+    json_dict_copy = copy.deepcopy(json_dict)
+    if show_event and (event_id in json_dict_copy):
+        if json_dict_copy[event_name] in config_dict[event_name]:
+            json_dict['timestamp'] = get_timestamp()
+            ignore_fields = config_dict["ignore_fields"]
 
-    if ignore_fields != []:   
-        list(map(json_dict.pop, ignore_fields, [None] * len(ignore_fields)))
+            if ignore_fields != []:   
+                list(map(json_dict.pop, ignore_fields, [None] * len(ignore_fields)))
 
-    with open(f'{JSON_PATH}/{config_dict["filename"]}.json', "a") as f:
-        json.dump(json_dict, f)
-        f.write("\n")
+            with open(f'{JSON_PATH}/{config_dict["filename"]}.json', "a") as f:
+                json.dump(json_dict, f)
+                f.write("\n")
 
 def heidpi_worker(address, function):
 
@@ -169,8 +160,6 @@ def main():
                 args=(address, heidpi_process_flow_events))
         heidpi_flow_job.start()
 
-        heidpi_flow_job.join()
-
     #######################################################################################
     if SHOW_PACKET_EVENTS:
         global POOL_PACKET
@@ -183,8 +172,6 @@ def main():
                 args=(address, heidpi_process_packet_events))
         heidpi_packet_job.start()
 
-        heidpi_packet_job.join()
-
     #######################################################################################
     if SHOW_DAEMON_EVENTS:
         global POOL_DAEMON
@@ -196,7 +183,6 @@ def main():
                 args=(address, heidpi_process_daemon_events))
         heidpi_daemon_job.start()
 
-        heidpi_daemon_job.join()
 
     #######################################################################################
     if SHOW_ERROR_EVENTS:
@@ -206,11 +192,8 @@ def main():
 
         heidpi_error_job = multiprocessing.Process(
                 target=heidpi_worker,
-                args=(address, heidpi_error_job))
+                args=(address, heidpi_process_error_events))
         heidpi_error_job.start()
-
-        heidpi_error_job.join()
-    
 
 if __name__ == '__main__':
     main()

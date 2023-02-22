@@ -41,7 +41,7 @@ def heidpi_process_flow_events(json_dict, instance, current_flow, global_user_da
     return True
 
 def heidpi_process_daemon_events(json_dict, instance, current_flow, global_user_data):
-    POOL_DAEMON.submit(heidpi_log_event, (DAEMON_CONFIG, json_dict, SHOW_DAEMON_EVENTS, "daemon_event_id", "daemon_event_name"))
+    POOL_DAEMON.submit(heidpi_log_event, DAEMON_CONFIG, json_dict, SHOW_DAEMON_EVENTS, "daemon_event_id", "daemon_event_name")
     return True
 
 def heidpi_process_error_events(json_dict, instance, current_flow, global_user_data):
@@ -52,14 +52,14 @@ def heidpi_log_event(config_dict, json_dict, show_event: bool, event_id: str, ev
     json_dict_copy = copy.deepcopy(json_dict)
     if show_event and (event_id in json_dict_copy):
         if json_dict_copy[event_name] in config_dict[event_name]:
-            json_dict['timestamp'] = get_timestamp()
+            json_dict_copy['timestamp'] = get_timestamp()
             ignore_fields = config_dict["ignore_fields"]
 
             if ignore_fields != []:   
-                list(map(json_dict.pop, ignore_fields, [None] * len(ignore_fields)))
+                list(map(json_dict_copy.pop, ignore_fields, [None] * len(ignore_fields)))
 
             with open(f'{JSON_PATH}/{config_dict["filename"]}.json', "a") as f:
-                json.dump(json_dict, f)
+                json.dump(json_dict_copy, f)
                 f.write("\n")
 
 def heidpi_worker(address, function):

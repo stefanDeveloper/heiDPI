@@ -64,19 +64,9 @@ docker run -v ${PWD}/heidpi-data:/tmp/ -v ${PWD}/heidpi-logs:/var/log -e UNIX=/t
 
 ### Config file
 
-You can change the default configuration by mounting a config file `/usr/src/app/config.yml`.
+You can change the default configuration by mounting a config file `/usr/src/app/config.yml`:
 
 ```yaml
-appName: heiDPI
-
-logging:
-  level: INFO
-  encoding: utf-8
-  format: "%(asctime)s %(levelname)s:%(message)s"
-  datefmt: "%Y-%m-%dT%I:%M:%S"
-  # filemode: w # a for append, will not override current file
-  # filename: heiDPI.log
-
 flow_event:
   ignore_fields: []
   flow_event_name:
@@ -85,28 +75,6 @@ flow_event:
     - idle
     - detected
   filename: flow_event
-  threads: 25
-
-daemon_event:
-  ignore_fields: []
-  daemon_event_name:
-    - init
-    - status
-  filename: daemon_event
-  threads: 25
-
-packet_event:
-  ignore_fields: []
-  packet_event_name:
-    - packet-flow
-  filename: packet_event
-  threads: 25
-
-error_event:
-  ignore_fields: []
-  error_event_name:
-    - error-flow
-  filename: error_event
   threads: 25
 ```
 

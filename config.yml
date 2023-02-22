@@ -16,6 +16,7 @@ flow_event:
     - idle
     - detected
   filename: flow_event
+  threads: 25
 
 daemon_event:
   ignore_fields: []
@@ -23,15 +24,18 @@ daemon_event:
     - init
     - status
   filename: daemon_event
+  threads: 25
 
 packet_event:
   ignore_fields: []
   packet_event_name:
     - packet-flow
   filename: packet_event
+  threads: 25
 
 error_event:
   ignore_fields: []
   error_event_name:
     - error-flow
   filename: error_event
+  threads: 25

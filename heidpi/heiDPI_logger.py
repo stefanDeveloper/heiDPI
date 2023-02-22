@@ -1,10 +1,12 @@
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import os
 import json
 import stat
 import logging
 import datetime
 import copy
+import multiprocessing
 
 from heidpi import App
 from heidpi import heiDPIsrvd
@@ -28,56 +30,52 @@ def file_path(string):
 
 def get_timestamp():
     date_time = datetime.datetime.fromtimestamp(datetime.datetime.now().timestamp())
-    return date_time.strftime(App.config()["logging"]["datefmt"].get())
+    return date_time.strftime(LOGGING_CONFIG["datefmt"])
 
-def onJsonLineRecvd(json_dict, instance, current_flow, global_user_data):
+def heidpi_process_packet_events(json_dict, instance, current_flow, global_user_data):
     json_dict_copy = copy.deepcopy(json_dict)
-    if SHOW_ERROR_EVENTS and ("error_event_id" in json_dict_copy):
-        if json_dict_copy["error_event_name"] in App.config()["error_event"]["error_event_name"].get():
-            json_dict_copy['timestamp'] = get_timestamp()
-            ignore_fields = App.config()["error_event"]["ignore_fields"].get()
-            if ignore_fields != []:   
-                list(map(json_dict_copy.pop, ignore_fields, [None] * len(ignore_fields)))
-
-            with open(f'{JSON_PATH}/error_event.json', "a") as f:
-                json.dump(json_dict_copy, f)
-                f.write("\n")
-
     if SHOW_PACKET_EVENTS and ("packet_event_id" in json_dict_copy):
-        if json_dict_copy["packet_event_name"] in App.config()["packet_event"]["packet_event_name"].get():
-            json_dict_copy['timestamp'] = get_timestamp()
-            ignore_fields = App.config()["packet_event"]["ignore_fields"].get()
-            if ignore_fields != []:   
-                list(map(json_dict_copy.pop, ignore_fields, [None] * len(ignore_fields)))
-
-            with open(f'{JSON_PATH}/{App.config()["error_event"]["filename"]}.json', "a") as f:
-                json.dump(json_dict_copy, f)
-                f.write("\n")
-
-    if SHOW_FLOW_EVENTS and ("flow_event_id" in json_dict_copy):
-        if json_dict_copy["flow_event_name"] in App.config()["flow_event"]["flow_event_name"].get():
-            json_dict_copy['timestamp'] = get_timestamp()
-            ignore_fields = App.config()["flow_event"]["ignore_fields"].get()
-            if ignore_fields != []:   
-                list(map(json_dict_copy.pop, ignore_fields, [None] * len(ignore_fields)))
-
-            with open(f'{JSON_PATH}/{App.config()["flow_event"]["filename"]}.json', "a") as f:
-                json.dump(json_dict_copy, f)
-                f.write("\n")
-
-    if SHOW_DAEMON_EVENTS and ("daemon_event_id" in json_dict_copy):
-        if json_dict_copy["daemon_event_name"] in App.config()["daemon_event"]["daemon_event_name"].get():
-            json_dict_copy['timestamp'] = get_timestamp()
-            ignore_fields = App.config()["daemon_event"]["ignore_fields"].get()
-            if ignore_fields != []:   
-                list(map(json_dict_copy.pop, ignore_fields, [None] * len(ignore_fields)))
-
-            with open(f'{JSON_PATH}/{App.config()["daemon_event"]["filename"]}.json', "a") as f:
-                json.dump(json_dict_copy, f)
-                f.write("\n")
-    del json_dict_copy
+        if json_dict_copy["packet_event_name"] in PACKET_CONFIG["packet_event_name"]:
+            POOL_PACKET.submit(heidpi_log_event, PACKET_CONFIG, json_dict_copy)
     return True
 
+def heidpi_process_flow_events(json_dict, instance, current_flow, global_user_data):
+    json_dict_copy = copy.deepcopy(json_dict)
+    if SHOW_FLOW_EVENTS and ("flow_event_id" in json_dict_copy):
+        if json_dict_copy["flow_event_name"] in FLOW_CONFIG["flow_event_name"]:
+            POOL_FLOW.submit(heidpi_log_event, FLOW_CONFIG, json_dict_copy)
+    return True
+
+def heidpi_process_daemon_events(json_dict, instance, current_flow, global_user_data):
+    json_dict_copy = copy.deepcopy(json_dict)
+    if SHOW_DAEMON_EVENTS and ("daemon_event_id" in json_dict_copy):
+        if json_dict_copy["daemon_event_name"] in POOL_DAEMON["daemon_event_name"]:
+            POOL_DAEMON.submit(heidpi_log_event, (DAEMON_CONFIG, json_dict_copy))
+    return True
+
+def heidpi_process_error_events(json_dict, instance, current_flow, global_user_data):
+    json_dict_copy = copy.deepcopy(json_dict)
+    if SHOW_ERROR_EVENTS and ("error_event_id" in json_dict_copy):
+        if json_dict_copy["error_event_name"] in ERROR_CONFIG["error_event_name"]:
+            POOL_ERROR.submit(heidpi_log_event, ERROR_CONFIG, json_dict_copy)
+    return True
+
+def heidpi_log_event(config_dict, json_dict):
+    json_dict['timestamp'] = get_timestamp()
+    ignore_fields = config_dict["ignore_fields"]
+
+    if ignore_fields != []:   
+        list(map(json_dict.pop, ignore_fields, [None] * len(ignore_fields)))
+
+    with open(f'{JSON_PATH}/{config_dict["filename"]}.json', "a") as f:
+        json.dump(json_dict, f)
+        f.write("\n")
+
+def heidpi_worker(address, function):
+
+    nsock = heiDPIsrvd.nDPIsrvdSocket()
+    nsock.connect(address)
+    nsock.loop(function, None, None)
 
 def validateAddress(args):
     tcp_addr_set = False
@@ -105,7 +103,6 @@ def validateAddress(args):
         address = address_tcpip
 
     return address
-
 
 def main():
     parser = argparse.ArgumentParser(description='heiDPI Python Interface', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -142,14 +139,78 @@ def main():
     SHOW_DAEMON_EVENTS = args.show_daemon_events
     JSON_PATH = args.write
 
+    global PACKET_CONFIG
+    global FLOW_CONFIG
+    global DAEMON_CONFIG
+    global ERROR_CONFIG
+
+    PACKET_CONFIG = App.config()["packet_event"].get()
+    FLOW_CONFIG = App.config()["flow_event"].get()
+    DAEMON_CONFIG = App.config()["daemon_event"].get()
+    ERROR_CONFIG = App.config()["error_event"].get()
+
+    global LOGGING_CONFIG
+
+    LOGGING_CONFIG = App.config()["logging"].get()
+
     logging.info('Recv buffer size: {}'.format(
         heiDPIsrvd.NETWORK_BUFFER_MAX_SIZE))
     logging.info('Connecting to {} ..'.format(
         address[0]+':'+str(address[1]) if type(address) is tuple else address))
 
-    nsock = heiDPIsrvd.nDPIsrvdSocket()
-    nsock.connect(address)
-    nsock.loop(onJsonLineRecvd, None, None)
+    #######################################################################################
+    if SHOW_FLOW_EVENTS:
+        global POOL_FLOW
+        
+        POOL_FLOW = ThreadPoolExecutor(max_workers=FLOW_CONFIG['threads'])
+
+        heidpi_flow_job = multiprocessing.Process(
+                target=heidpi_worker,
+                args=(address, heidpi_process_flow_events))
+        heidpi_flow_job.start()
+
+        heidpi_flow_job.join()
+
+    #######################################################################################
+    if SHOW_PACKET_EVENTS:
+        global POOL_PACKET
+        
+
+        POOL_PACKET = ThreadPoolExecutor(max_workers=PACKET_CONFIG['threads'])
+        
+        heidpi_packet_job = multiprocessing.Process(
+                target=heidpi_worker,
+                args=(address, heidpi_process_packet_events))
+        heidpi_packet_job.start()
+
+        heidpi_packet_job.join()
+
+    #######################################################################################
+    if SHOW_DAEMON_EVENTS:
+        global POOL_DAEMON
+
+        POOL_DAEMON = ThreadPoolExecutor(max_workers=DAEMON_CONFIG['threads'])
+
+        heidpi_daemon_job = multiprocessing.Process(
+                target=heidpi_worker,
+                args=(address, heidpi_process_daemon_events))
+        heidpi_daemon_job.start()
+
+        heidpi_daemon_job.join()
+
+    #######################################################################################
+    if SHOW_ERROR_EVENTS:
+        global POOL_ERROR
+        
+        POOL_ERROR = ThreadPoolExecutor(max_workers=ERROR_CONFIG['threads'])
+
+        heidpi_error_job = multiprocessing.Process(
+                target=heidpi_worker,
+                args=(address, heidpi_error_job))
+        heidpi_error_job.start()
+
+        heidpi_error_job.join()
+    
 
 if __name__ == '__main__':
     main()

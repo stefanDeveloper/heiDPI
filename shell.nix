@@ -7,7 +7,7 @@ in pkgs.mkShell rec {
   venvDir = "./.venv";
   requirements = "requirements.txt";
 
-  name = "nfstream";
+  name = "heiDPI";
 
   buildInputs = [
     pythonPackages.setuptools

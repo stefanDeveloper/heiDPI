@@ -101,6 +101,54 @@ As derived from [nDPId Tuning](https://github.com/utoni/nDPId/blob/main/README.m
 | `SHOW_FLOW_EVENTS` | `int` | 1 |
 | `MAX_BUFFERED_LINES` | `int` | 1024 |
 
+### Config file
+
+You can change the default configuration by mounting a config file `/usr/src/app/config.yml`.
+
+```yaml
+appName: heiDPI
+
+logging:
+  level: INFO
+  encoding: utf-8
+  format: "%(asctime)s %(levelname)s:%(message)s"
+  datefmt: "%Y-%m-%dT%I:%M:%S"
+  # filemode: w # a for append, will not override current file
+  # filename: heiDPI.log
+
+flow_event:
+  ignore_fields: []
+  flow_event_name:
+    - update
+    - end
+    - idle
+    - detected
+  filename: flow_event
+  threads: 25
+
+daemon_event:
+  ignore_fields: []
+  daemon_event_name:
+    - init
+    - status
+  filename: daemon_event
+  threads: 25
+
+packet_event:
+  ignore_fields: []
+  packet_event_name:
+    - packet-flow
+  filename: packet_event
+  threads: 25
+
+error_event:
+  ignore_fields: []
+  error_event_name:
+    - error-flow
+  filename: error_event
+  threads: 25
+```
+
 ## License
 
 This project is licensed under the GPL-3.0 license - see the [LICENSE.md](LICENSE.md) file for details.

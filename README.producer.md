@@ -1,7 +1,10 @@
 
 [![Build](https://github.com/stefanDeveloper/heidpi/actions/workflows/docker-publish-producer.yml/badge.svg)](https://github.com/stefanDeveloper/heidpi/actions/workflows/docker-publish-producer.yml) [![GitHub Stars](https://img.shields.io/github/stars/stefanDeveloper/heidpi)](https://github.com/stefanDeveloper/heidpi/) [![Docker Pulls](https://img.shields.io/docker/pulls/stefan96/heidpi-producer.svg)](https://hub.docker.com/r/stefan96/heidpi-producer/) ![Docker Stars](https://img.shields.io/docker/stars/stefan96/heidpi-producer)
 
-# heiDPI Producer - nDPId Docker Image
+![heiFIP Logo](https://raw.githubusercontent.com/stefanDeveloper/heiDPI/main/assets/heidpi_logo.png?raw=true)
+
+
+--------------------------------------------------------------------------------
 
 A [nDPId](https://github.com/utoni/nDPId/) Docker Image for deep packet inspection. As described in [nDPId README](https://github.com/utoni/nDPId/blob/main/README.md), we split the image into [producer](https://hub.docker.com/r/stefan96/heidpi-producer) and [consumer](https://hub.docker.com/r/stefan96/heidpi-consumer) image for a more generic purpose. For the producer, the image starts the UNIX and UDP socket and nDPId respectively. Via environment variables, users can adapt the nDPId daemon and nDPIsrvd. As by now, we support all current nDPId parameters.
 

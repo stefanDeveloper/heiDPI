@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="1280mm"
+   height="640mm"
+   viewBox="0 0 1280 640"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="heidpi.svg"
+   inkscape:export-filename="/home/smachmeier/heidpi.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#4b4bff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="1"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="0.28284582"
+     inkscape:cx="906.85449"
+     inkscape:cy="2412.9754"
+     inkscape:window-width="2560"
+     inkscape:window-height="1415"
+     inkscape:window-x="1920"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2">
+    <rect
+       x="199.20045"
+       y="740.57422"
+       width="288.62665"
+       height="114.39487"
+       id="rect2780" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="path866"
+       style="fill:#00ff00;stroke-width:9.62847"
+       d="M 391.13795,337.61611 H 257.46812 V 467.55025 A 170.45404,170.45404 0 0 0 391.13795,337.61611 Z" />
+    <path
+       id="path41841"
+       style="fill:#00ff00;stroke-width:36.3911"
+       d="M 1478.8926 1275.9238 A 644.23574 644.23574 0 0 0 1478.3164 1276.0293 L 1478.3164 1767.1191 L 973.10742 1767.1191 A 644.23574 644.23574 0 0 0 972.91016 1768.0391 L 972.91016 1921.3574 L 1624.5137 1921.3574 L 1624.5137 1275.9238 L 1478.8926 1275.9238 z "
+       transform="scale(0.26458333)" />
+    <path
+       id="path1003"
+       style="fill:#00ff00;stroke-width:9.62847"
+       d="M 224.91627,129.80289 A 170.45404,170.45404 0 0 0 54.462423,300.25675 170.45404,170.45404 0 0 0 218.78735,470.51097 V 296.80742 h 176.546 A 170.45404,170.45404 0 0 0 224.91627,129.80289 Z" />
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text2778"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect2780);fill:#000000;fill-opacity:1;stroke:none" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="468.883"
+       y="393.11078"
+       id="text3226"><tspan
+         sodipodi:role="line"
+         id="tspan3224"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:211.667px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+         x="468.883"
+         y="393.11078"><tspan
+           style="fill:#ffffff"
+           id="tspan32487">hei</tspan><tspan
+           style="fill:#00ff00"
+           id="tspan24269">DPI</tspan></tspan></text>
+  </g>
+</svg>

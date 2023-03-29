@@ -24,7 +24,6 @@
     </a>
   </td>
 </tr>
-
 <tr>
   <td><b>Supported Versions</b></td>
   <td>
@@ -115,9 +114,9 @@ docker run -v ${PWD}/heidpi-data:/tmp/ -v ${PWD}/heidpi-logs:/var/log -e UNIX=/t
 
 For a more detail view on how to customize your images, see:
 
-- [Producer](./README.producer.md)
-- [Consumer](./README.consumer.md)
+- [Producer](https://github.com/stefanDeveloper/heiDPI/blob/main/README.producer.md)
+- [Consumer](https://github.com/stefanDeveloper/heiDPI/blob/main/README.consumer.md)
 
 ## License
 
-This project is licensed under the GPL-3.0 license - see the [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the GPL-3.0 license - see the [LICENSE.md](https://github.com/stefanDeveloper/heiDPI/blob/main/LICENSE) file for details.

@@ -13,7 +13,6 @@ WORKDIR /usr/src/app
 
 COPY heidpi ./ \
      config.yml ./ \
-     setup.py ./ \
      LICENSE ./ \
      README.md ./ \
      requirements.txt ./ \

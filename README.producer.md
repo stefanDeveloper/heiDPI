@@ -57,7 +57,6 @@ docker run -v ${PWD}/heidpi-data:/tmp/ -v ${PWD}/heidpi-logs:/var/log -e UNIX=/t
 |------------------------------|---------|-------------------|
 | `INTERFACE` | `string` | |
 | `PORT` | `int` | 7000 |
-| `MAX_THREADS` | `int` | 4 |
 | `FLOW_ANALYSIS` | `int` | 0 |
 | `JA3_URL` | `string` | |
 | `SSL_SHA1_URL` | `string` | |

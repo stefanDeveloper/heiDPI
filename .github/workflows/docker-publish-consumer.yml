@@ -2,7 +2,7 @@ name: Docker Publisch Consumer CI
 
 on:
   schedule:
-    - cron: '42 11 * * *'
+    - cron: '0 0 1 * *'
   push:
     branches: [ "main" ]
     # Publish semver tags as releases.

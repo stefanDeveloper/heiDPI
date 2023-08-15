@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "heiDPI"
-version = "0.0.1"
+version = "1.2.0"
 authors = [
   { name="Stefan Machmeier", email="stefan.machmeier@uni-heidelberg.de" },
 ]

@@ -75,6 +75,21 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # Build and push Docker image with Buildx (don't push on PR)
+      # https://github.com/docker/build-push-action
+      - name: Build and push Docker image
+        id: build-and-push-latest
+        if: github.event_name != 'pull_request'
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: latest
+          labels: ${{ steps.meta.outputs.labels }}
+          file: ./Dockerfile.producer
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
       - name: Docker Hub Description
         uses: peter-evans/dockerhub-description@v3
         with:

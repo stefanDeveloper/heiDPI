@@ -1,4 +1,4 @@
-FROM alpine:3.17.1 as builder
+FROM alpine:3.19.0 as builder
 
 WORKDIR /root
 RUN apk update && \

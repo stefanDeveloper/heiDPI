@@ -10,11 +10,13 @@ logging:
 
 flow_event:
   ignore_fields: []
+  ignore_risks: []
   flow_event_name:
     - update
     - end
     - idle
     - detected
+    - detection-update
   filename: flow_event
   threads: 25
 

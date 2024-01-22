@@ -53,10 +53,15 @@ def heidpi_log_event(config_dict, json_dict, show_event: bool, event_id: str, ev
     if show_event and (event_id in json_dict_copy):
         if json_dict_copy[event_name] in config_dict[event_name]:
             json_dict_copy['timestamp'] = get_timestamp()
+            
             ignore_fields = config_dict["ignore_fields"]
-
             if ignore_fields != []:   
                 list(map(json_dict_copy.pop, ignore_fields, [None] * len(ignore_fields)))
+
+            # Current quick fix 
+            ignore_risks = config_dict["ignore_risks"]
+            if "ndpi" in json_dict_copy and "flow_risk" in json_dict_copy["ndpi"] and ignore_risks != []:   
+                list(map(json_dict_copy["ndpi"]["flow_risk"].pop, ignore_risks, [None] * len(ignore_risks)))
 
             with open(f'{JSON_PATH}/{config_dict["filename"]}.json', "a") as f:
                 json.dump(json_dict_copy, f)

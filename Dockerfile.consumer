@@ -1,4 +1,4 @@
-FROM pypy:latest
+FROM pypy:3.9-slim-bookworm
 
 ENV WRITE="/var/log" \
     SHOW_FLOW_EVENTS=1 \

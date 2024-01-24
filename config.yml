@@ -1,7 +1,7 @@
 appName: heiDPI
 
 logging:
-  level: DEBUG
+  level: INFO
   encoding: utf-8
   format: "%(asctime)s %(levelname)s:%(message)s"
   datefmt: "%Y-%m-%dT%I:%M:%S"
@@ -22,9 +22,9 @@ flow_event:
     enabled: true
     filepath: /tmp/city.mmdb
     keys:
-      - country
-      - city
+      - country.names
       - location
+      - city
       - traits
       - postal
   threads: 4
@@ -42,15 +42,6 @@ packet_event:
   packet_event_name:
     - packet-flow
   filename: packet_event
-  geoip2_city:
-    enabled: true
-    filepath: /tmp/city.mmdb
-    keys:
-      - country.name
-      - city
-      - location
-      - traits
-      - postal
   threads: 4
 
 error_event:

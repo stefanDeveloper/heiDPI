@@ -35,7 +35,7 @@ def get_timestamp():
     return date_time.strftime(LOGGING_CONFIG["datefmt"])
 
 def heidpi_process_packet_events(json_dict, instance, current_flow, global_user_data):
-    POOL_PACKET.submit(heidpi_log_event, PACKET_CONFIG, json_dict, SHOW_PACKET_EVENTS, "packet_event_id", "packet_event_name", heidpi_packet_processing)
+    POOL_PACKET.submit(heidpi_log_event, PACKET_CONFIG, json_dict, SHOW_PACKET_EVENTS, "packet_event_id", "packet_event_name", None)
     return True
 
 def heidpi_process_flow_events(json_dict, instance, current_flow, global_user_data):
@@ -57,7 +57,7 @@ def heidpi_log_event(config_dict, json_dict, show_event: bool, event_id: str, ev
             json_dict_copy['timestamp'] = get_timestamp()
             
             if additional_processing != None:
-                additional_processing(config_dict, json_dict_copy)           
+                json_dict_copy = additional_processing(config_dict, json_dict_copy)           
             
             ignore_fields = config_dict["ignore_fields"]
             if ignore_fields != []:   
@@ -70,71 +70,56 @@ def heidpi_log_event(config_dict, json_dict, show_event: bool, event_id: str, ev
 def heidpi_flow_processing(config_dict, json_dict):
     if config_dict["geoip2_city"]["enabled"]:
         try:
-            response = FLOW_GEOIP2_READER.city(str(json_dict["dst_ip"]))
-            logging.debug(response["country"])
+            response = FLOW_GEOIP2_READER.city(str(json_dict["src_ip"])).raw
             
-            json_dict["src_geoip2_city"] = {}
+            json_dict["dst_geoip2_city"] = {}
+            
             for key in config_dict["geoip2_city"]["keys"]:
                 geoinformation = ""
                 if "." in key:
                     sub_response = response
                     for subkey in key.split("."):
-                        sub_response = getattr(sub_response, subkey)
+                        sub_response = sub_response[subkey]
                     geoinformation = sub_response
                 else:
-                    geoinformation = getattr(response, key)
+                    geoinformation = response[key]
+                    
                 json_dict["src_geoip2_city"][key] = geoinformation
             
         except geoip2.errors.AddressNotFoundError:
             logging.debug(f"No record found for src_ip: {json_dict['dst_ip']}")
         except:
-            logging.info(f"Something went wrong with {geoinformation}")
+            logging.error(f"Something went wrong with {config_dict['geoip2_city']['keys']}")
 
         try:
-            response = FLOW_GEOIP2_READER.city(str(json_dict["dst_ip"]))
-            logging.debug(response["country"])
+            response = FLOW_GEOIP2_READER.city(str(json_dict["dst_ip"])).raw
             
             json_dict["dst_geoip2_city"] = {}
+            
             for key in config_dict["geoip2_city"]["keys"]:
                 geoinformation = ""
                 if "." in key:
                     sub_response = response
                     for subkey in key.split("."):
-                        sub_response = getattr(sub_response, subkey)
+                        sub_response = sub_response[subkey]
                     geoinformation = sub_response
                 else:
-                    geoinformation = getattr(response, key)
+                    geoinformation = response[key]
+                
                 json_dict["dst_geoip2_city"][key] = geoinformation
+
         except geoip2.errors.AddressNotFoundError:
             logging.debug(f"No record found for dst_ip:{json_dict['dst_ip']}")
         except:
-            logging.info(f"Something went wrong with {geoinformation}")
+            logging.error(f"Something went wrong with {config_dict['geoip2_city']['keys']}")
         
     # Filter risks, normally applied to flow events
     ignore_risks = config_dict["ignore_risks"]
     if "ndpi" in json_dict and "flow_risk" in json_dict["ndpi"] and ignore_risks != []:   
         list(map(json_dict["ndpi"]["flow_risk"].pop, ignore_risks, [None] * len(ignore_risks)))
+    
+    return json_dict
 
-def heidpi_packet_processing(config_dict, json_dict):
-    if config_dict["geoip2_city"]["enabled"]:
-        try:
-            response = FLOW_GEOIP2_READER.city(str(json_dict["source"]))
-            logging.debug(response["country"])
-            
-            json_dict["src_geoip2_city"] = {}
-            for key in config_dict["geoip2_city"]["keys"]:
-                geoinformation = ""
-                if "." in key:
-                    sub_response = response
-                    for subkey in key.split("."):
-                        sub_response = getattr(sub_response, subkey)
-                    geoinformation = sub_response
-                else:
-                    geoinformation = getattr(response, key)
-                json_dict["source_geoip2_city"][key] = geoinformation
-            
-        except geoip2.errors.AddressNotFoundError:
-            logging.debug(f"No record found for source: {json_dict['source']}")
 
 def heidpi_worker(address, function):
 

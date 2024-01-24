@@ -1,5 +1,7 @@
 import argparse
 from concurrent.futures import ThreadPoolExecutor
+import geoip2.database
+import geoip2.errors
 import os
 import json
 import stat
@@ -33,39 +35,106 @@ def get_timestamp():
     return date_time.strftime(LOGGING_CONFIG["datefmt"])
 
 def heidpi_process_packet_events(json_dict, instance, current_flow, global_user_data):
-    POOL_PACKET.submit(heidpi_log_event, PACKET_CONFIG, json_dict, SHOW_PACKET_EVENTS, "packet_event_id", "packet_event_name")
+    POOL_PACKET.submit(heidpi_log_event, PACKET_CONFIG, json_dict, SHOW_PACKET_EVENTS, "packet_event_id", "packet_event_name", heidpi_packet_processing)
     return True
 
 def heidpi_process_flow_events(json_dict, instance, current_flow, global_user_data):
-    POOL_FLOW.submit(heidpi_log_event, FLOW_CONFIG, json_dict, SHOW_FLOW_EVENTS, "flow_event_id", "flow_event_name")
+    POOL_FLOW.submit(heidpi_log_event, FLOW_CONFIG, json_dict, SHOW_FLOW_EVENTS, "flow_event_id", "flow_event_name", heidpi_flow_processing)
     return True
 
 def heidpi_process_daemon_events(json_dict, instance, current_flow, global_user_data):
-    POOL_DAEMON.submit(heidpi_log_event, DAEMON_CONFIG, json_dict, SHOW_DAEMON_EVENTS, "daemon_event_id", "daemon_event_name")
+    POOL_DAEMON.submit(heidpi_log_event, DAEMON_CONFIG, json_dict, SHOW_DAEMON_EVENTS, "daemon_event_id", "daemon_event_name", None)
     return True
 
 def heidpi_process_error_events(json_dict, instance, current_flow, global_user_data):
-    POOL_ERROR.submit(heidpi_log_event, ERROR_CONFIG, json_dict, SHOW_ERROR_EVENTS, "error_event_id", "error_event_name")
+    POOL_ERROR.submit(heidpi_log_event, ERROR_CONFIG, json_dict, SHOW_ERROR_EVENTS, "error_event_id", "error_event_name", None)
     return True
 
-def heidpi_log_event(config_dict, json_dict, show_event: bool, event_id: str, event_name: str):
+def heidpi_log_event(config_dict, json_dict, show_event: bool, event_id: str, event_name: str, additional_processing):
     json_dict_copy = copy.deepcopy(json_dict)
     if show_event and (event_id in json_dict_copy):
         if json_dict_copy[event_name] in config_dict[event_name]:
             json_dict_copy['timestamp'] = get_timestamp()
             
+            if additional_processing != None:
+                additional_processing(config_dict, json_dict_copy)           
+            
             ignore_fields = config_dict["ignore_fields"]
             if ignore_fields != []:   
                 list(map(json_dict_copy.pop, ignore_fields, [None] * len(ignore_fields)))
 
-            # Current quick fix 
-            ignore_risks = config_dict["ignore_risks"]
-            if "ndpi" in json_dict_copy and "flow_risk" in json_dict_copy["ndpi"] and ignore_risks != []:   
-                list(map(json_dict_copy["ndpi"]["flow_risk"].pop, ignore_risks, [None] * len(ignore_risks)))
-
             with open(f'{JSON_PATH}/{config_dict["filename"]}.json', "a") as f:
                 json.dump(json_dict_copy, f)
                 f.write("\n")
+
+def heidpi_flow_processing(config_dict, json_dict):
+    if config_dict["geoip2_city"]["enabled"]:
+        try:
+            response = FLOW_GEOIP2_READER.city(str(json_dict["dst_ip"]))
+            logging.debug(response["country"])
+            
+            json_dict["src_geoip2_city"] = {}
+            for key in config_dict["geoip2_city"]["keys"]:
+                geoinformation = ""
+                if "." in key:
+                    sub_response = response
+                    for subkey in key.split("."):
+                        sub_response = getattr(sub_response, subkey)
+                    geoinformation = sub_response
+                else:
+                    geoinformation = getattr(response, key)
+                json_dict["src_geoip2_city"][key] = geoinformation
+            
+        except geoip2.errors.AddressNotFoundError:
+            logging.debug(f"No record found for src_ip: {json_dict['dst_ip']}")
+        except:
+            logging.info(f"Something went wrong with {geoinformation}")
+
+        try:
+            response = FLOW_GEOIP2_READER.city(str(json_dict["dst_ip"]))
+            logging.debug(response["country"])
+            
+            json_dict["dst_geoip2_city"] = {}
+            for key in config_dict["geoip2_city"]["keys"]:
+                geoinformation = ""
+                if "." in key:
+                    sub_response = response
+                    for subkey in key.split("."):
+                        sub_response = getattr(sub_response, subkey)
+                    geoinformation = sub_response
+                else:
+                    geoinformation = getattr(response, key)
+                json_dict["dst_geoip2_city"][key] = geoinformation
+        except geoip2.errors.AddressNotFoundError:
+            logging.debug(f"No record found for dst_ip:{json_dict['dst_ip']}")
+        except:
+            logging.info(f"Something went wrong with {geoinformation}")
+        
+    # Filter risks, normally applied to flow events
+    ignore_risks = config_dict["ignore_risks"]
+    if "ndpi" in json_dict and "flow_risk" in json_dict["ndpi"] and ignore_risks != []:   
+        list(map(json_dict["ndpi"]["flow_risk"].pop, ignore_risks, [None] * len(ignore_risks)))
+
+def heidpi_packet_processing(config_dict, json_dict):
+    if config_dict["geoip2_city"]["enabled"]:
+        try:
+            response = FLOW_GEOIP2_READER.city(str(json_dict["source"]))
+            logging.debug(response["country"])
+            
+            json_dict["src_geoip2_city"] = {}
+            for key in config_dict["geoip2_city"]["keys"]:
+                geoinformation = ""
+                if "." in key:
+                    sub_response = response
+                    for subkey in key.split("."):
+                        sub_response = getattr(sub_response, subkey)
+                    geoinformation = sub_response
+                else:
+                    geoinformation = getattr(response, key)
+                json_dict["source_geoip2_city"][key] = geoinformation
+            
+        except geoip2.errors.AddressNotFoundError:
+            logging.debug(f"No record found for source: {json_dict['source']}")
 
 def heidpi_worker(address, function):
 
@@ -160,6 +229,10 @@ def main():
         
         POOL_FLOW = ThreadPoolExecutor(max_workers=FLOW_CONFIG['threads'])
 
+        if FLOW_CONFIG['geoip2_city']["enabled"]:
+            global FLOW_GEOIP2_READER
+            FLOW_GEOIP2_READER = geoip2.database.Reader(FLOW_CONFIG['geoip2_city']["filepath"])
+
         heidpi_flow_job = multiprocessing.Process(
                 target=heidpi_worker,
                 args=(address, heidpi_process_flow_events))
@@ -168,7 +241,9 @@ def main():
     #######################################################################################
     if SHOW_PACKET_EVENTS:
         global POOL_PACKET
-        
+        if PACKET_CONFIG['geoip2_city']["enabled"]:
+            global PACKET_GEOIP2_READER
+            PACKET_GEOIP2_READER = geoip2.database.Reader(PACKET_CONFIG['geoip2_city']["filepath"])
 
         POOL_PACKET = ThreadPoolExecutor(max_workers=PACKET_CONFIG['threads'])
         

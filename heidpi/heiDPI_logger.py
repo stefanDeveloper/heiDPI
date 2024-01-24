@@ -72,7 +72,7 @@ def heidpi_flow_processing(config_dict, json_dict):
         try:
             response = FLOW_GEOIP2_READER.city(str(json_dict["src_ip"])).raw
             
-            json_dict["dst_geoip2_city"] = {}
+            json_dict["src_geoip2_city"] = {}
             
             for key in config_dict["geoip2_city"]["keys"]:
                 geoinformation = ""

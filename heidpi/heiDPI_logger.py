@@ -57,7 +57,7 @@ def heidpi_log_event(config_dict, json_dict, show_event: bool, event_id: str, ev
             json_dict_copy['timestamp'] = get_timestamp()
             
             if additional_processing != None:
-                json_dict_copy = additional_processing(config_dict, json_dict_copy)           
+                additional_processing(config_dict, json_dict_copy)           
             
             ignore_fields = config_dict["ignore_fields"]
             if ignore_fields != []:   
@@ -117,9 +117,6 @@ def heidpi_flow_processing(config_dict, json_dict):
     ignore_risks = config_dict["ignore_risks"]
     if "ndpi" in json_dict and "flow_risk" in json_dict["ndpi"] and ignore_risks != []:   
         list(map(json_dict["ndpi"]["flow_risk"].pop, ignore_risks, [None] * len(ignore_risks)))
-    
-    return json_dict
-
 
 def heidpi_worker(address, function):
 

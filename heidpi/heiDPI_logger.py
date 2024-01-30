@@ -117,7 +117,7 @@ def heidpi_flow_processing(config_dict, json_dict):
                         for key in key.split("."):
                             current_data = current_data[key]
                         json_dict["dst_geoip2_city"][key] = current_data
-                    except (KeyError, TypeError):
+                    except (KeyError, TypeError) as e:
                         logging.exception(f"Exception: {e}")
                 else:
                     json_dict["dst_geoip2_city"][key] = response[key]

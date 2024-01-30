@@ -37,29 +37,25 @@ def get_timestamp():
 
 def heidpi_process_packet_events(json_dict, instance, current_flow, global_user_data):
     future = [POOL_PACKET.submit(heidpi_log_event, PACKET_CONFIG, json_dict, SHOW_PACKET_EVENTS, "packet_event_id", "packet_event_name", None)]
-    done, _ = wait(future, return_when=ALL_COMPLETED)
-    del done, future
+    _, _ = wait(future, return_when=ALL_COMPLETED)
     gc.collect()
     return True
 
 def heidpi_process_flow_events(json_dict, instance, current_flow, global_user_data):
     future = [POOL_FLOW.submit(heidpi_log_event, FLOW_CONFIG, json_dict, SHOW_FLOW_EVENTS, "flow_event_id", "flow_event_name", heidpi_flow_processing)]
-    done, _ = wait(future, return_when=ALL_COMPLETED)
-    del done, future
+    _, _ = wait(future, return_when=ALL_COMPLETED)
     gc.collect()
     return True
 
 def heidpi_process_daemon_events(json_dict, instance, current_flow, global_user_data):
     future = [POOL_DAEMON.submit(heidpi_log_event, DAEMON_CONFIG, json_dict, SHOW_DAEMON_EVENTS, "daemon_event_id", "daemon_event_name", None)]
-    done, _ = wait(future, return_when=ALL_COMPLETED)
-    del done, future
+    _, _ = wait(future, return_when=ALL_COMPLETED)
     gc.collect()
     return True
 
 def heidpi_process_error_events(json_dict, instance, current_flow, global_user_data):
     future = [POOL_ERROR.submit(heidpi_log_event, ERROR_CONFIG, json_dict, SHOW_ERROR_EVENTS, "error_event_id", "error_event_name", None)]
-    done, _ = wait(future, return_when=ALL_COMPLETED)
-    del done, future
+    _, _ = wait(future, return_when=ALL_COMPLETED)
     gc.collect()
     return True
 

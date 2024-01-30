@@ -19,14 +19,15 @@ flow_event:
     - detection-update
   filename: flow_event
   geoip2_city:
-    enabled: true
+    enabled: True
     filepath: /tmp/city.mmdb
     keys:
-      - country.names
-      - location
-      - city
-      - traits
-      - postal
+      - country.names.en
+      # Additional configurations
+      # - location
+      # - city
+      # - traits
+      # - postal
   threads: 4
 
 daemon_event:

@@ -1,5 +1,4 @@
 import argparse
-from concurrent.futures import ThreadPoolExecutor, ALL_COMPLETED, wait
 import geoip2.database
 import geoip2.errors
 import os
@@ -9,7 +8,6 @@ import logging
 import datetime
 import copy
 import multiprocessing
-import gc
 
 from heidpi import App
 from heidpi import heiDPIsrvd
@@ -36,27 +34,19 @@ def get_timestamp():
     return date_time.strftime(LOGGING_CONFIG["datefmt"])
 
 def heidpi_process_packet_events(json_dict, instance, current_flow, global_user_data):
-    future = [POOL_PACKET.submit(heidpi_log_event, PACKET_CONFIG, json_dict, SHOW_PACKET_EVENTS, "packet_event_id", "packet_event_name", None)]
-    _, _ = wait(future, return_when=ALL_COMPLETED)
-    gc.collect()
+    POOL_PACKET.map(heidpi_log_event, [(PACKET_CONFIG, json_dict, SHOW_PACKET_EVENTS, "packet_event_id", "packet_event_name", None)])
     return True
 
 def heidpi_process_flow_events(json_dict, instance, current_flow, global_user_data):
-    future = [POOL_FLOW.submit(heidpi_log_event, FLOW_CONFIG, json_dict, SHOW_FLOW_EVENTS, "flow_event_id", "flow_event_name", heidpi_flow_processing)]
-    _, _ = wait(future, return_when=ALL_COMPLETED)
-    gc.collect()
+    POOL_FLOW.map(heidpi_log_event, [(FLOW_CONFIG, json_dict, SHOW_FLOW_EVENTS, "flow_event_id", "flow_event_name", heidpi_flow_processing)])
     return True
 
 def heidpi_process_daemon_events(json_dict, instance, current_flow, global_user_data):
-    future = [POOL_DAEMON.submit(heidpi_log_event, DAEMON_CONFIG, json_dict, SHOW_DAEMON_EVENTS, "daemon_event_id", "daemon_event_name", None)]
-    _, _ = wait(future, return_when=ALL_COMPLETED)
-    gc.collect()
+    POOL_DAEMON.map(heidpi_log_event, [(DAEMON_CONFIG, json_dict, SHOW_DAEMON_EVENTS, "daemon_event_id", "daemon_event_name", None)])
     return True
 
 def heidpi_process_error_events(json_dict, instance, current_flow, global_user_data):
-    future = [POOL_ERROR.submit(heidpi_log_event, ERROR_CONFIG, json_dict, SHOW_ERROR_EVENTS, "error_event_id", "error_event_name", None)]
-    _, _ = wait(future, return_when=ALL_COMPLETED)
-    gc.collect()
+    POOL_ERROR.map(heidpi_log_event, [(ERROR_CONFIG, json_dict, SHOW_ERROR_EVENTS, "error_event_id", "error_event_name", None)])
     return True
 
 def heidpi_log_event(config_dict, json_dict, show_event: bool, event_id: str, event_name: str, additional_processing):
@@ -75,7 +65,6 @@ def heidpi_log_event(config_dict, json_dict, show_event: bool, event_id: str, ev
             with open(f'{JSON_PATH}/{config_dict["filename"]}.json', "a") as f:
                 json.dump(json_dict_copy, f)
                 f.write("\n")
-                del json_dict_copy
 
 def heidpi_flow_processing(config_dict, json_dict):
     if bool(config_dict["geoip2_city"]["enabled"]):
@@ -218,7 +207,7 @@ def main():
     if SHOW_FLOW_EVENTS:
         global POOL_FLOW
         
-        POOL_FLOW = ThreadPoolExecutor(max_workers=FLOW_CONFIG['threads'])
+        POOL_FLOW = multiprocessing.Pool(FLOW_CONFIG['threads'])
 
         if bool(FLOW_CONFIG['geoip2_city']["enabled"]):
             global FLOW_GEOIP2_READER
@@ -233,7 +222,7 @@ def main():
     if SHOW_PACKET_EVENTS:
         global POOL_PACKET
 
-        POOL_PACKET = ThreadPoolExecutor(max_workers=PACKET_CONFIG['threads'])
+        POOL_PACKET = multiprocessing.Pool(PACKET_CONFIG['threads'])
         
         heidpi_packet_job = multiprocessing.Process(
                 target=heidpi_worker,
@@ -244,7 +233,7 @@ def main():
     if SHOW_DAEMON_EVENTS:
         global POOL_DAEMON
 
-        POOL_DAEMON = ThreadPoolExecutor(max_workers=DAEMON_CONFIG['threads'])
+        POOL_DAEMON = multiprocessing.Pool(DAEMON_CONFIG['threads'])
 
         heidpi_daemon_job = multiprocessing.Process(
                 target=heidpi_worker,
@@ -256,7 +245,7 @@ def main():
     if SHOW_ERROR_EVENTS:
         global POOL_ERROR
         
-        POOL_ERROR = ThreadPoolExecutor(max_workers=ERROR_CONFIG['threads'])
+        POOL_ERROR = multiprocessing.Pool(ERROR_CONFIG['threads'])
 
         heidpi_error_job = multiprocessing.Process(
                 target=heidpi_worker,

@@ -37,13 +37,9 @@ def heidpi_log_event(config_dict, json_dict, additional_processing):
     json_dict_copy = copy.deepcopy(json_dict)
     json_dict_copy['timestamp'] = get_timestamp()
     
-    logging.debug("Running additional processing")
-
     if additional_processing != None:
         additional_processing(config_dict, json_dict_copy)
     
-    logging.debug("Finished additional processing")
-
     ignore_fields = config_dict["ignore_fields"]
     if ignore_fields != []:   
         list(map(json_dict_copy.pop, ignore_fields, [None] * len(ignore_fields)))
@@ -102,10 +98,12 @@ def heidpi_flow_processing(config_dict: dict, json_dict: dict):
     if "ndpi" in json_dict and "flow_risk" in json_dict["ndpi"] and config_dict["ignore_risks"] != []:   
         list(map(json_dict["ndpi"]["flow_risk"].pop, config_dict["ignore_risks"], [None] * len(config_dict["ignore_risks"])))
 
-def heidpi_worker(address, function):
+def heidpi_worker(address, function, filter):
     nsock = heiDPIsrvd.nDPIsrvdSocket()
     nsock.connect(address)
     nsock.loop(function, None, None)
+    if filter != "":
+        nsock.addFilter(filter_str=filter)
 
 def heidpi_type_analyzer(json_dict, instance, current_flow, global_user_data):
     if SHOW_FLOW_EVENTS and ("flow_event_id" in json_dict):
@@ -161,6 +159,8 @@ def main():
     parser.add_argument('--write', type=dir_path, action=heiDPI_env.env_default('WRITE'), default='/var/log', help='heiDPI write path for logs')
 
     parser.add_argument('--config', type=file_path, action=heiDPI_env.env_default('CONFIG'), default=f'{os.getcwd()}/config.yml', help='heiDPI write path for logs')
+    
+    parser.add_argument('--filter', type=str, action=heiDPI_env.env_default('FILTER'), required=False, default="", help="nDPId filter string, e.g. --filter 'ndpi' in json_dict and 'proto' in json_dict['ndpi']")
 
     parser.add_argument('--show-daemon-events', type=int, action=heiDPI_env.env_default('SHOW_DAEMON_EVENTS'), default=0, required=False, help='heiDPI shows daemon events')
     parser.add_argument('--show-packet-events', type=int, action=heiDPI_env.env_default('SHOW_PACKET_EVENTS'), default=0, required=False, help='heiDPI shows packet events')
@@ -231,7 +231,7 @@ def main():
         
         POOL_ERROR = ThreadPool(ERROR_CONFIG['threads'])
         
-    heidpi_worker(address, heidpi_type_analyzer)
+    heidpi_worker(address, heidpi_type_analyzer, args.filter)
 
 if __name__ == '__main__':
     main()

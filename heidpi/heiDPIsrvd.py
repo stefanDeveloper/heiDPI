@@ -267,11 +267,43 @@ class SocketTimeout(nDPIsrvdException):
     def __str__(self):
         return 'Socket timeout.'
 
+class JsonFilter():
+    def __init__(self, filter_string):
+        self.filter_string = filter_string
+        self.filter = compile(filter_string, '<string>', 'eval')
+    def evaluate(self, json_dict):
+        if type(json_dict) is not dict:
+            raise nDPIsrvdException('Could not evaluate JSON Filter: expected dictionary, got {}'.format(type(json_dict)))
+        return eval(self.filter, {'json_dict': json_dict})
+
 class nDPIsrvdSocket:
     def __init__(self):
         self.sock_family = None
         self.flow_mgr = FlowManager()
         self.received_bytes = 0
+        self.json_filter = list()
+
+    def addFilter(self, filter_str):
+        self.json_filter.append(JsonFilter(filter_str))
+
+    def evalFilters(self, json_dict):
+        for jf in self.json_filter:
+            try:
+                json_filter_retval = jf.evaluate(json_dict)
+            except Exception as err:
+                print()
+                sys.stderr.write('Error while evaluating expression "{}"\n'.format(jf.filter_string))
+                raise err
+
+            if not isinstance(json_filter_retval, bool):
+                print()
+                sys.stderr.write('Error while evaluating expression "{}"\n'.format(jf.filter_string))
+                raise nDPIsrvdException('JSON Filter returned an invalid type: expected bool, got {}'.format(type(json_filter_retval)))
+
+            if json_filter_retval is False:
+                return False
+
+        return True
 
     def connect(self, addr):
         if type(addr) is tuple:
@@ -288,6 +320,7 @@ class nDPIsrvdSocket:
         self.digitlen = 0
         self.lines = []
         self.failed_lines = []
+        self.filtered_lines = 0
 
     def timeout(self, timeout):
         self.sock.settimeout(timeout)
@@ -346,6 +379,7 @@ class nDPIsrvdSocket:
             try:
                 json_dict = json.loads(received_line[0].decode('ascii', errors='replace'), strict=True)
             except json.decoder.JSONDecodeError as e:
+                json_dict = dict()
                 self.failed_lines += [received_line]
                 self.lines = self.lines[1:]
                 raise(e)
@@ -356,19 +390,24 @@ class nDPIsrvdSocket:
                 retval = False
                 continue
 
-            try:
-                if callback_json(json_dict, instance, self.flow_mgr.getFlow(instance, json_dict), global_user_data) is not True:
-                    self.failed_lines += [received_line]
-                    retval = False
-            except Exception as e:
-                    self.failed_lines += [received_line]
-                    self.lines = self.lines[1:]
-                    raise(e)
+            current_flow = self.flow_mgr.getFlow(instance, json_dict)
+            filter_eval = self.evalFilters(json_dict)
+            if filter_eval is True:
+                try:
+                    if callback_json(json_dict, instance, current_flow, global_user_data) is not True:
+                        self.failed_lines += [received_line]
+                        retval = False
+                except Exception as e:
+                        self.failed_lines += [received_line]
+                        self.lines = self.lines[1:]
+                        raise(e)
+            else:
+                self.filtered_lines += 1
 
             for _, flow in self.flow_mgr.getFlowsToCleanup(instance, json_dict).items():
                 if callback_flow_cleanup is None:
                     pass
-                elif callback_flow_cleanup(instance, flow, global_user_data) is not True:
+                elif filter_eval is True and callback_flow_cleanup(instance, flow, global_user_data) is not True:
                     self.failed_lines += [received_line]
                     self.lines = self.lines[1:]
                     retval = False
@@ -400,6 +439,7 @@ class nDPIsrvdSocket:
         if len(self.failed_lines) > 0:
             raise nDPIsrvdException('Failed lines > 0: {}'.format(len(self.failed_lines)))
         return self.flow_mgr.verifyFlows()
+
 
 def toSeconds(usec):
     return usec / (1000 * 1000)

@@ -55,17 +55,21 @@ def heidpi_flow_processing(config_dict: dict, json_dict: dict):
             
             json_dict["src_geoip2_city"] = {}
             
-            for key in config_dict["geoip2_city"]["keys"]:
-                if "." in key:
+            for keys in config_dict["geoip2_city"]["keys"]:
+                if "." in keys:
                     current_data = response
                     try:
-                        for key in key.split("."):
-                            current_data = current_data[key]
-                        json_dict["src_geoip2_city"][key] = current_data
+                        for subkey in keys.split("."):
+                            if not subkey in current_data:
+                                raise geoip2.errors.AddressNotFoundError(f"Error in key: {subkey}")
+                            current_data = current_data[subkey]
+                        json_dict["src_geoip2_city"][subkey] = current_data
                     except (KeyError, TypeError) as e:
                         logging.exception(f"Exception: {e}")
                 else:
-                    json_dict["src_geoip2_city"][key] = response[key]
+                    if not keys in json_dict["src_geoip2_city"]:
+                        raise geoip2.errors.AddressNotFoundError(f"Error in key: {keys}")
+                    json_dict["src_geoip2_city"][keys] = response[keys]
             
         except geoip2.errors.AddressNotFoundError:
             logging.debug(f"No record found for src_ip: {json_dict['src_ip']}")
@@ -77,17 +81,21 @@ def heidpi_flow_processing(config_dict: dict, json_dict: dict):
             
             json_dict["dst_geoip2_city"] = {}
             
-            for key in config_dict["geoip2_city"]["keys"]:
-                if "." in key:
+            for keys in config_dict["geoip2_city"]["keys"]:
+                if "." in keys:
                     current_data = response
                     try:
-                        for key in key.split("."):
-                            current_data = current_data[key]
-                        json_dict["dst_geoip2_city"][key] = current_data
+                        for subkey in keys.split("."):
+                            if not subkey in current_data:
+                                raise geoip2.errors.AddressNotFoundError(f"Error in key: {subkey}")
+                            current_data = current_data[subkey]
+                        json_dict["dst_geoip2_city"][subkey] = current_data
                     except (KeyError, TypeError) as e:
                         logging.exception(f"Exception: {e}")
                 else:
-                    json_dict["dst_geoip2_city"][key] = response[key]
+                    if not keys in json_dict["dst_geoip2_city"]:
+                        raise geoip2.errors.AddressNotFoundError(f"Error in key: {keys}")
+                    json_dict["dst_geoip2_city"][keys] = response[keys]
                     
         except geoip2.errors.AddressNotFoundError:
             logging.debug(f"No record found for dst_ip:{json_dict['dst_ip']}")

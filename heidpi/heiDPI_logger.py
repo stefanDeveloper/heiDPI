@@ -123,7 +123,7 @@ def heidpi_worker(address, function, filter):
     if filter != "":
         nsock.addFilter(filter_str=filter)
 
-def write_logs(json_dict_copy, config_dict):
+def heidpi_write_logs(json_dict_copy, config_dict):
     with open(f'{JSON_PATH}/{config_dict["filename"]}.json', "a") as f:
         json.dump(json_dict_copy, f)
         f.write("\n")
@@ -135,22 +135,22 @@ def heidpi_type_analyzer(json_dict, instance, current_flow, global_user_data):
     if SHOW_FLOW_EVENTS and ("flow_event_id" in json_dict):
         if json_dict["flow_event_name"] in FLOW_CONFIG["flow_event_name"]:
             process_json = heidpi_log_event(FLOW_CONFIG, json_dict, heidpi_flow_processing)
-            write_logs(process_json, FLOW_CONFIG)
+            heidpi_write_logs(process_json, FLOW_CONFIG)
     elif SHOW_PACKET_EVENTS and ("packet_event_id" in json_dict):
         if json_dict["packet_event_name"] in PACKET_CONFIG["packet_event_name"]:
             process_json = heidpi_log_event(PACKET_CONFIG, json_dict, None)
-            write_logs(process_json, PACKET_CONFIG)
+            heidpi_write_logs(process_json, PACKET_CONFIG)
     elif SHOW_DAEMON_EVENTS and ("daemon_event_id" in json_dict):
         if json_dict["daemon_event_name"] in DAEMON_CONFIG["daemon_event_name"]:
             process_json = heidpi_log_event(DAEMON_CONFIG, json_dict, None)
-            write_logs(process_json, DAEMON_CONFIG)
+            heidpi_write_logs(process_json, DAEMON_CONFIG)
     elif SHOW_ERROR_EVENTS and ("error_event_id" in json_dict):
         if json_dict["error_event_name"] in ERROR_CONFIG["error_event_name"]:
             process_json = heidpi_log_event(ERROR_CONFIG, json_dict, None)
-            write_logs(process_json, ERROR_CONFIG)
+            heidpi_write_logs(process_json, ERROR_CONFIG)
     return True
 
-def validateAddress(args):
+def heidpi_validateAddress(args):
     tcp_addr_set = False
     address = None
 
@@ -197,7 +197,7 @@ def main():
     parser.add_argument('--show-flow-events', type=int, action=heiDPI_env.env_default('SHOW_FLOW_EVENTS'), default=0, required=False, help='heiDPI shows flow events')
 
     args = parser.parse_args()
-    address = validateAddress(args)
+    address = heidpi_validateAddress(args)
 
     App(args.config)
 

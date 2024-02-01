@@ -137,7 +137,6 @@ def validateAddress(args):
     else:
         address_tcpip = (args.host, args.port)
         tcp_addr_set = True
-
     if args.unix is None:
         address_unix = DEFAULT_UNIX
     else:

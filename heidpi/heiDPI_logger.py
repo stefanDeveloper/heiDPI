@@ -7,7 +7,9 @@ import stat
 import logging
 import datetime
 import copy
+import gc
 from multiprocessing.pool import ThreadPool
+from concurrent.futures import ProcessPoolExecutor
 
 from heidpi import App
 from heidpi import heiDPIsrvd
@@ -43,15 +45,15 @@ def heidpi_log_event(config_dict, json_dict, additional_processing):
     ignore_fields = config_dict["ignore_fields"]
     if ignore_fields != []:   
         list(map(json_dict_copy.pop, ignore_fields, [None] * len(ignore_fields)))
-
-    with open(f'{JSON_PATH}/{config_dict["filename"]}.json', "a") as f:
-        json.dump(json_dict_copy, f)
-        f.write("\n")
+    
+    return json_dict_copy
 
 def heidpi_flow_processing(config_dict: dict, json_dict: dict):
     if bool(config_dict["geoip2_city"]["enabled"]):
+        response = {}
+        reader = geoip2.database.Reader(config_dict['geoip2_city']["filepath"])
         try:
-            response = FLOW_GEOIP2_READER.city(str(json_dict["src_ip"])).raw
+            response = reader.city(str(json_dict["src_ip"])).raw
             
             json_dict["src_geoip2_city"] = {}
             
@@ -66,6 +68,8 @@ def heidpi_flow_processing(config_dict: dict, json_dict: dict):
                         json_dict["src_geoip2_city"][subkey] = current_data
                     except (KeyError, TypeError) as e:
                         logging.exception(f"Exception: {e}")
+                    finally:
+                        del current_data
                 else:
                     if not keys in json_dict["src_geoip2_city"]:
                         raise geoip2.errors.AddressNotFoundError(f"Error in key: {keys}")
@@ -77,7 +81,7 @@ def heidpi_flow_processing(config_dict: dict, json_dict: dict):
             logging.exception(f"Exception: {e}")
 
         try:
-            response = FLOW_GEOIP2_READER.city(str(json_dict["dst_ip"])).raw
+            response = reader.city(str(json_dict["dst_ip"])).raw
             
             json_dict["dst_geoip2_city"] = {}
             
@@ -92,6 +96,8 @@ def heidpi_flow_processing(config_dict: dict, json_dict: dict):
                         json_dict["dst_geoip2_city"][subkey] = current_data
                     except (KeyError, TypeError) as e:
                         logging.exception(f"Exception: {e}")
+                    finally:
+                        del current_data
                 else:
                     if not keys in json_dict["dst_geoip2_city"]:
                         raise geoip2.errors.AddressNotFoundError(f"Error in key: {keys}")
@@ -101,6 +107,10 @@ def heidpi_flow_processing(config_dict: dict, json_dict: dict):
             logging.debug(f"No record found for dst_ip:{json_dict['dst_ip']}")
         except Exception as e:
             logging.exception(f"Exception: {e}")
+            
+        del response
+        del reader
+        gc.collect()
 
     # Filter risks, normally applied to flow events
     if "ndpi" in json_dict and "flow_risk" in json_dict["ndpi"] and config_dict["ignore_risks"] != []:   
@@ -113,19 +123,31 @@ def heidpi_worker(address, function, filter):
     if filter != "":
         nsock.addFilter(filter_str=filter)
 
+def write_logs(json_dict_copy, config_dict):
+    with open(f'{JSON_PATH}/{config_dict["filename"]}.json', "a") as f:
+        json.dump(json_dict_copy, f)
+        f.write("\n")
+    
+    del json_dict_copy
+    gc.collect()
+
 def heidpi_type_analyzer(json_dict, instance, current_flow, global_user_data):
     if SHOW_FLOW_EVENTS and ("flow_event_id" in json_dict):
         if json_dict["flow_event_name"] in FLOW_CONFIG["flow_event_name"]:
-            POOL_FLOW.apply_async(func=heidpi_log_event, args=(FLOW_CONFIG, json_dict, heidpi_flow_processing))
+            process_json = heidpi_log_event(FLOW_CONFIG, json_dict, heidpi_flow_processing)
+            write_logs(process_json, FLOW_CONFIG)
     elif SHOW_PACKET_EVENTS and ("packet_event_id" in json_dict):
         if json_dict["packet_event_name"] in PACKET_CONFIG["packet_event_name"]:
-            POOL_PACKET.apply_async(func=heidpi_log_event, args=(PACKET_CONFIG, json_dict, None))
+            process_json = heidpi_log_event(PACKET_CONFIG, json_dict, None)
+            write_logs(process_json, PACKET_CONFIG)
     elif SHOW_DAEMON_EVENTS and ("daemon_event_id" in json_dict):
         if json_dict["daemon_event_name"] in DAEMON_CONFIG["daemon_event_name"]:
-            POOL_DAEMON.apply_async(func=heidpi_log_event, args=(DAEMON_CONFIG, json_dict, None))
+            process_json = heidpi_log_event(DAEMON_CONFIG, json_dict, None)
+            write_logs(process_json, DAEMON_CONFIG)
     elif SHOW_ERROR_EVENTS and ("error_event_id" in json_dict):
         if json_dict["error_event_name"] in ERROR_CONFIG["error_event_name"]:
-            POOL_ERROR.apply_async(func=heidpi_log_event, args=(ERROR_CONFIG, json_dict, None))
+            process_json = heidpi_log_event(ERROR_CONFIG, json_dict, None)
+            write_logs(process_json, ERROR_CONFIG)
     return True
 
 def validateAddress(args):
@@ -208,35 +230,6 @@ def main():
         heiDPIsrvd.NETWORK_BUFFER_MAX_SIZE))
     logging.info('Connecting to {} ..'.format(
         address[0]+':'+str(address[1]) if type(address) is tuple else address))
-    
-    # #######################################################################################
-    if SHOW_FLOW_EVENTS:
-        global POOL_FLOW
-        
-        POOL_FLOW = ThreadPool(processes=FLOW_CONFIG['threads'])
-
-        if bool(FLOW_CONFIG['geoip2_city']["enabled"]):
-            global FLOW_GEOIP2_READER
-            FLOW_GEOIP2_READER = geoip2.database.Reader(FLOW_CONFIG['geoip2_city']["filepath"])
-        
-
-    # #######################################################################################
-    if SHOW_PACKET_EVENTS:
-        global POOL_PACKET
-
-        POOL_PACKET = ThreadPool(PACKET_CONFIG['threads'])
-        
-    # #######################################################################################
-    if SHOW_DAEMON_EVENTS:
-        global POOL_DAEMON
-
-        POOL_DAEMON = ThreadPool(DAEMON_CONFIG['threads'])
-
-    # #######################################################################################
-    if SHOW_ERROR_EVENTS:
-        global POOL_ERROR
-        
-        POOL_ERROR = ThreadPool(ERROR_CONFIG['threads'])
         
     heidpi_worker(address, heidpi_type_analyzer, args.filter)
 

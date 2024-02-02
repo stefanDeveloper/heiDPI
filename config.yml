@@ -24,7 +24,7 @@ flow_event:
     keys:
       - country.names.en
       # Additional configurations
-      # - location
+      - location
       # - city
       # - traits
       # - postal

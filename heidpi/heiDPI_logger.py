@@ -80,7 +80,7 @@ def heidpi_flow_processing(config_dict: dict, json_dict: dict):
                         del current_data
                 else:
                     try:
-                        if not keys in json_dict["src_geoip2_city"]:
+                        if not keys in response:
                             raise geoip2.errors.AddressNotFoundError(f"Error in key: {keys}")
                         json_dict["src_geoip2_city"][keys] = response[keys]
                     except geoip2.errors.AddressNotFoundError:
@@ -112,7 +112,7 @@ def heidpi_flow_processing(config_dict: dict, json_dict: dict):
                         del current_data
                 else:
                     try:
-                        if not keys in json_dict["dst_geoip2_city"]:
+                        if not keys in response:
                             raise geoip2.errors.AddressNotFoundError(f"Error in key: {keys}")
                         json_dict["dst_geoip2_city"][keys] = response[keys]
                     except Exception as e:

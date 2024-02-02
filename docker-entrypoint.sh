@@ -66,7 +66,7 @@ echo "Start nDPIsrvd..."
             -c /tmp/nDPIsrvd-daemon-collector.sock \
             -s /tmp/nDPIsrvd-daemon-distributor.sock \
             -S 0.0.0.0:$PORT \
-            -u root/- \
+            -u root \
             -d \
             -L /tmp/nDPIsrvd.log \
             "${params_ndpisrvd[@]}"

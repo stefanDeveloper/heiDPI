@@ -50,8 +50,8 @@ def heidpi_log_event(config_dict, json_dict, additional_processing):
         json.dump(json_dict_copy, f)
         f.write("\n")
     
-    # del json_dict_copy
-    # gc.collect()
+    del json_dict_copy
+    gc.collect()
     
 def heidpi_flow_processing(config_dict: dict, json_dict: dict):
     if bool(config_dict["geoip2_city"]["enabled"]):
@@ -127,9 +127,9 @@ def heidpi_flow_processing(config_dict: dict, json_dict: dict):
         except  Exception as e:
             logging.exception(f"Exception: {e}")
             
-        # del response
-        # del reader
-        # gc.collect()
+        del response
+        del reader
+        gc.collect()
 
     # Filter risks, normally applied to flow events
     if "ndpi" in json_dict and "flow_risk" in json_dict["ndpi"] and config_dict["ignore_risks"] != []:   

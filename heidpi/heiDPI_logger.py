@@ -1,4 +1,5 @@
 import argparse
+import multiprocessing
 import geoip2.database
 import geoip2.errors
 import os
@@ -9,7 +10,7 @@ import datetime
 import copy
 import gc
 from multiprocessing.pool import ThreadPool
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 from heidpi import App
 from heidpi import heiDPIsrvd
@@ -45,9 +46,14 @@ def heidpi_log_event(config_dict, json_dict, additional_processing):
     ignore_fields = config_dict["ignore_fields"]
     if ignore_fields != []:   
         list(map(json_dict_copy.pop, ignore_fields, [None] * len(ignore_fields)))
-    
-    return json_dict_copy
 
+    with open(f'{JSON_PATH}/{config_dict["filename"]}.json', "a") as f:
+        json.dump(json_dict_copy, f)
+        f.write("\n")
+    
+    del json_dict_copy
+    gc.collect()
+    
 def heidpi_flow_processing(config_dict: dict, json_dict: dict):
     if bool(config_dict["geoip2_city"]["enabled"]):
         response = {}
@@ -123,31 +129,44 @@ def heidpi_worker(address, function, filter):
     if filter != "":
         nsock.addFilter(filter_str=filter)
 
-def heidpi_write_logs(json_dict_copy, config_dict):
-    with open(f'{JSON_PATH}/{config_dict["filename"]}.json', "a") as f:
-        json.dump(json_dict_copy, f)
-        f.write("\n")
-    
-    del json_dict_copy
-    gc.collect()
+
+def heidpi_process_packet_events(json_dict, instance, current_flow, global_user_data):
+    if SHOW_PACKET_EVENTS and ("packet_event_id" in json_dict):
+            if json_dict["packet_event_name"] in PACKET_CONFIG["packet_event_name"]:
+                POOL_PACKET.submit(heidpi_log_event, PACKET_CONFIG, json_dict, None)
+    return True
+
+def heidpi_process_flow_events(json_dict, instance, current_flow, global_user_data):
+    if SHOW_FLOW_EVENTS and ("flow_event_id" in json_dict):
+        if json_dict["flow_event_name"] in FLOW_CONFIG["flow_event_name"]:
+            POOL_FLOW.submit(heidpi_log_event, FLOW_CONFIG, json_dict, heidpi_flow_processing)
+    return True
+
+def heidpi_process_daemon_events(json_dict, instance, current_flow, global_user_data):
+    if SHOW_DAEMON_EVENTS and ("daemon_event_id" in json_dict):
+            if json_dict["daemon_event_name"] in DAEMON_CONFIG["daemon_event_name"]:
+                POOL_DAEMON.submit(heidpi_log_event, DAEMON_CONFIG, json_dict, None)
+    return True
+
+def heidpi_process_error_events(json_dict, instance, current_flow, global_user_data):
+    if SHOW_ERROR_EVENTS and ("error_event_id" in json_dict):
+        if json_dict["error_event_name"] in ERROR_CONFIG["error_event_name"]:
+            POOL_ERROR.submit(heidpi_log_event, ERROR_CONFIG, json_dict, None)
+    return True
 
 def heidpi_type_analyzer(json_dict, instance, current_flow, global_user_data):
     if SHOW_FLOW_EVENTS and ("flow_event_id" in json_dict):
         if json_dict["flow_event_name"] in FLOW_CONFIG["flow_event_name"]:
-            process_json = heidpi_log_event(FLOW_CONFIG, json_dict, heidpi_flow_processing)
-            heidpi_write_logs(process_json, FLOW_CONFIG)
+            POOL_FLOW.submit(heidpi_log_event, FLOW_CONFIG, json_dict, heidpi_flow_processing)
     elif SHOW_PACKET_EVENTS and ("packet_event_id" in json_dict):
         if json_dict["packet_event_name"] in PACKET_CONFIG["packet_event_name"]:
-            process_json = heidpi_log_event(PACKET_CONFIG, json_dict, None)
-            heidpi_write_logs(process_json, PACKET_CONFIG)
+            POOL_PACKET.submit(heidpi_log_event, PACKET_CONFIG, json_dict, None)
     elif SHOW_DAEMON_EVENTS and ("daemon_event_id" in json_dict):
         if json_dict["daemon_event_name"] in DAEMON_CONFIG["daemon_event_name"]:
-            process_json = heidpi_log_event(DAEMON_CONFIG, json_dict, None)
-            heidpi_write_logs(process_json, DAEMON_CONFIG)
+            POOL_DAEMON.submit(heidpi_log_event, DAEMON_CONFIG, json_dict, None)
     elif SHOW_ERROR_EVENTS and ("error_event_id" in json_dict):
         if json_dict["error_event_name"] in ERROR_CONFIG["error_event_name"]:
-            process_json = heidpi_log_event(ERROR_CONFIG, json_dict, None)
-            heidpi_write_logs(process_json, ERROR_CONFIG)
+            POOL_ERROR.submit(heidpi_log_event, ERROR_CONFIG, json_dict, None)
     return True
 
 def heidpi_validateAddress(args):
@@ -230,8 +249,51 @@ def main():
         heiDPIsrvd.NETWORK_BUFFER_MAX_SIZE))
     logging.info('Connecting to {} ..'.format(
         address[0]+':'+str(address[1]) if type(address) is tuple else address))
+
+    if SHOW_FLOW_EVENTS:
+        global POOL_FLOW
         
-    heidpi_worker(address, heidpi_type_analyzer, args.filter)
+        POOL_FLOW = ThreadPoolExecutor(max_workers=PACKET_CONFIG['threads'])
+        
+        heidpi_daemon_job = multiprocessing.Process(
+                target=heidpi_worker,
+                args=(address, heidpi_process_flow_events, args.filter))
+        heidpi_daemon_job.start()
+
+
+    #######################################################################################
+    if SHOW_PACKET_EVENTS:
+        global POOL_PACKET
+        
+        POOL_PACKET = ThreadPoolExecutor(max_workers=PACKET_CONFIG['threads'])
+        
+        heidpi_packet_job = multiprocessing.Process(
+                target=heidpi_worker,
+                args=(address, heidpi_process_packet_events, args.filter))
+        heidpi_packet_job.start()
+
+    #######################################################################################
+    if SHOW_DAEMON_EVENTS:
+        global POOL_DAEMON
+
+        POOL_DAEMON = ThreadPoolExecutor(max_workers=DAEMON_CONFIG['threads'])
+
+        heidpi_daemon_job = multiprocessing.Process(
+                target=heidpi_worker,
+                args=(address, heidpi_process_daemon_events, args.filter))
+        heidpi_daemon_job.start()
+
+
+    #######################################################################################
+    if SHOW_ERROR_EVENTS:
+        global POOL_ERROR
+        
+        POOL_ERROR = ThreadPoolExecutor(max_workers=ERROR_CONFIG['threads'])
+
+        heidpi_error_job = multiprocessing.Process(
+                target=heidpi_worker,
+                args=(address, heidpi_process_error_events, args.filter))
+        heidpi_error_job.start()
 
 if __name__ == '__main__':
     main()

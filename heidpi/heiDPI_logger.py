@@ -9,8 +9,7 @@ import logging
 import datetime
 import copy
 import gc
-from multiprocessing.pool import ThreadPool
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 
 from heidpi import App
 from heidpi import heiDPIsrvd
@@ -51,14 +50,15 @@ def heidpi_log_event(config_dict, json_dict, additional_processing):
         json.dump(json_dict_copy, f)
         f.write("\n")
     
-    del json_dict_copy
-    gc.collect()
+    # del json_dict_copy
+    # gc.collect()
     
 def heidpi_flow_processing(config_dict: dict, json_dict: dict):
     if bool(config_dict["geoip2_city"]["enabled"]):
         response = {}
-        reader = geoip2.database.Reader(config_dict['geoip2_city']["filepath"])
-        try:
+        try: 
+            reader = geoip2.database.Reader(config_dict['geoip2_city']["filepath"])
+        
             response = reader.city(str(json_dict["src_ip"])).raw
             
             json_dict["src_geoip2_city"] = {}
@@ -72,17 +72,25 @@ def heidpi_flow_processing(config_dict: dict, json_dict: dict):
                                 raise geoip2.errors.AddressNotFoundError(f"Error in key: {subkey}")
                             current_data = current_data[subkey]
                         json_dict["src_geoip2_city"][subkey] = current_data
+                    except geoip2.errors.AddressNotFoundError:
+                        logging.debug(f"No record found for src_ip: {json_dict['src_ip']}")
                     except (KeyError, TypeError) as e:
+                        logging.exception(f"Exception: {e}")
+                    except  Exception as e:
                         logging.exception(f"Exception: {e}")
                     finally:
                         del current_data
                 else:
                     if not keys in json_dict["src_geoip2_city"]:
                         raise geoip2.errors.AddressNotFoundError(f"Error in key: {keys}")
-                    json_dict["src_geoip2_city"][keys] = response[keys]
-            
+                    try:
+                        json_dict["src_geoip2_city"][keys] = response[keys]
+                    except geoip2.errors.AddressNotFoundError:
+                        logging.debug(f"No record found for src_ip: {json_dict['src_ip']}")
+                    except  Exception as e:
+                        logging.exception(f"Exception: {e}")
         except geoip2.errors.AddressNotFoundError:
-            logging.debug(f"No record found for src_ip: {json_dict['src_ip']}")
+            logging.debug(f"No record found for dst_ip:{json_dict['dst_ip']}")
         except  Exception as e:
             logging.exception(f"Exception: {e}")
 
@@ -102,21 +110,26 @@ def heidpi_flow_processing(config_dict: dict, json_dict: dict):
                         json_dict["dst_geoip2_city"][subkey] = current_data
                     except (KeyError, TypeError) as e:
                         logging.exception(f"Exception: {e}")
+                    except Exception as e:
+                        logging.exception(f"Exception: {e}")
                     finally:
                         del current_data
                 else:
                     if not keys in json_dict["dst_geoip2_city"]:
                         raise geoip2.errors.AddressNotFoundError(f"Error in key: {keys}")
-                    json_dict["dst_geoip2_city"][keys] = response[keys]
                     
+                    try:
+                        json_dict["dst_geoip2_city"][keys] = response[keys]
+                    except Exception as e:
+                        logging.exception(f"Exception: {e}")
         except geoip2.errors.AddressNotFoundError:
             logging.debug(f"No record found for dst_ip:{json_dict['dst_ip']}")
-        except Exception as e:
+        except  Exception as e:
             logging.exception(f"Exception: {e}")
             
-        del response
-        del reader
-        gc.collect()
+        # del response
+        # del reader
+        # gc.collect()
 
     # Filter risks, normally applied to flow events
     if "ndpi" in json_dict and "flow_risk" in json_dict["ndpi"] and config_dict["ignore_risks"] != []:   

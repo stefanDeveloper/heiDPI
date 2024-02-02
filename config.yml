@@ -28,6 +28,7 @@ flow_event:
       # - city
       # - traits
       # - postal
+  threads: 4
 
 daemon_event:
   ignore_fields: []
@@ -35,15 +36,18 @@ daemon_event:
     - init
     - status
   filename: daemon_event
+  threads: 4
 
 packet_event:
   ignore_fields: []
   packet_event_name:
     - packet-flow
   filename: packet_event
+  threads: 4
 
 error_event:
   ignore_fields: []
   error_event_name:
     - error-flow
   filename: error_event
+  threads: 4

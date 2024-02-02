@@ -69,7 +69,7 @@ def heidpi_flow_processing(config_dict: dict, json_dict: dict):
                     try:
                         for subkey in keys.split("."):
                             if not subkey in current_data:
-                                raise geoip2.errors.AddressNotFoundError(f"Error in key: {subkey}")
+                                raise geoip2.errors.AddressNotFoundError(f"Error in key: {subkey} for {current_data}")
                             current_data = current_data[subkey]
                         json_dict["src_geoip2_city"][subkey] = current_data
                     except geoip2.errors.AddressNotFoundError:
@@ -105,7 +105,7 @@ def heidpi_flow_processing(config_dict: dict, json_dict: dict):
                     try:
                         for subkey in keys.split("."):
                             if not subkey in current_data:
-                                raise geoip2.errors.AddressNotFoundError(f"Error in key: {subkey}")
+                                raise geoip2.errors.AddressNotFoundError(f"Error in key: {subkey} for {current_data}")
                             current_data = current_data[subkey]
                         json_dict["dst_geoip2_city"][subkey] = current_data
                     except (KeyError, TypeError) as e:

@@ -90,7 +90,7 @@ def heidpi_flow_processing(config_dict: dict, json_dict: dict):
                     except  Exception as e:
                         logging.exception(f"Exception: {e}")
         except geoip2.errors.AddressNotFoundError:
-            logging.debug(f"No record found for dst_ip:{json_dict['dst_ip']}")
+            logging.debug(f"No record found for dst_ip:{json_dict['src_ip']}")
         except  Exception as e:
             logging.exception(f"Exception: {e}")
 

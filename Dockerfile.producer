@@ -19,7 +19,7 @@ RUN apk update && \
                        bash \
                        libtool
 
-RUN git clone --branch 1.6 https://github.com/utoni/nDPId.git
+RUN git clone --branch 1.5 https://github.com/utoni/nDPId.git
 
 COPY nDPId/config.h nDPId
 

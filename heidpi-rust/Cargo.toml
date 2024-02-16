@@ -18,6 +18,7 @@ toml = { version = "*" }
 clap = { version = "*", features = ["derive"] }
 anyhow = { version = "*" }
 maxminddb = { version = "*" }
+valico = { version = "*" }
 
 [build-dependencies]
 anyhow = { version = "*" }

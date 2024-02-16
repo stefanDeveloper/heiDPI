@@ -1,13 +1,16 @@
 pub mod cli;
+pub mod logging;
+pub mod stream;
 
 use log::error;
 use cli::Cli;
 use std::process::exit;
 
 /// Catches errors, prints them through the logger, then exits
-pub fn main() {
+#[tokio::main]
+pub async fn main() {
     // default to displaying warning and error log messages only
-    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("warn")).init();
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("trace")).init();
 
     match Cli::run() {
         Ok(_) => {}

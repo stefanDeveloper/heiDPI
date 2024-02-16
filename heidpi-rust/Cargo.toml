@@ -1,9 +1,23 @@
 [package]
-name = "heidpi-rust"
+name = "heidpi"
+authors = ["Stefan Machmeier"]
+license = "EUPL"
+license-file = "LICENSE"
+readme = "README.md"
+repository = "https://github.com/stefanDeveloper/heidpi"
+description = "nDPId Docker Image for packet inspection"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-tokio = { version = "1", features = ["full"] }
-serde_json = { version = "1" }
-log = { version = "0.4" }
+tokio = { version = "*", features = ["full"] }
+serde_json = { version = "*" }
+log = { version = "*" }
+env_logger = { version = "*" }
+toml = { version = "*" }
+clap = { version = "*", features = ["derive"] }
+anyhow = { version = "*" }
+maxminddb = { version = "*" }
+
+[build-dependencies]
+anyhow = { version = "*" }

@@ -2,7 +2,7 @@ use anyhow::{bail, ensure};
 use clap::Parser;
 use std::path::PathBuf;
 
-use crate::stream::{self, NDpidTcpstream};
+use crate::stream;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about)]
@@ -42,7 +42,7 @@ pub enum Cli {
 }
 
 impl Cli {
-    pub fn run() -> anyhow::Result<()> {
+    pub async fn run() -> anyhow::Result<()> {
         let cli = Self::parse();
         use Cli::*;
         match cli {
@@ -68,7 +68,7 @@ impl Cli {
                 error_events,
                 flow_events,  
              } => {
-                let mut v = NDpidTcpstream::connect("127.0.0.1:7000");
+                let mut v = stream::connect("127.0.0.1:7000").await;
             }
         }
 

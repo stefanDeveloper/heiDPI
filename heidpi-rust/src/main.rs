@@ -12,7 +12,7 @@ pub async fn main() {
     // default to displaying warning and error log messages only
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("trace")).init();
 
-    match Cli::run() {
+    match Cli::run().await {
         Ok(_) => {}
         Err(e) => {
             error!("{e}");

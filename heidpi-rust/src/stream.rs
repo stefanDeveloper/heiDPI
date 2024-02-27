@@ -60,16 +60,6 @@ pub async fn connect(connection: &str) -> anyhow::Result<()> {
                             trace!("read {} bytes", data);
                             match std::str::from_utf8(&buf[..data]) {
                                 Ok(json_str) => {
-                                    match str::from_utf8(json_str.as_bytes()) {
-                                        Ok(v) => {
-                                            info!("{:?}", v);
-                                            v
-                                        }
-                                        Err(e) => {
-                                            warn!("Invalid UTF-8 sequence: '{}'.", e);
-                                            break;
-                                        }
-                                    };
                                     for s_plit_n in json_str.split(EOL).into_iter() {
                                         if s_plit_n.len() > NETWORK_BUFFER_LENGTH_DIGITS {
                                             let v: Value = match serde_json::from_str(

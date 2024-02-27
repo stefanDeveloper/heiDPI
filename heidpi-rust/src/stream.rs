@@ -1,16 +1,12 @@
 use log::{info, trace, warn};
 use serde_json::Value;
-use tokio::sync::Mutex;
-use std::future::Future;
-use std::io::{self, Read};
-use std::rc::Rc;
-// use std::net::TcpStream;
+use std::io::{self};
 use std::str;
-use std::sync::Arc;
 use std::time::Duration;
 use std::{thread, time};
-use tokio::task;
 use tokio::net::TcpStream;
+
+use crate::process::process;
 
 const NETWORK_BUFFER_LENGTH_DIGITS: usize = 5;
 const NETWORK_BUFFER_MAX_SIZE: usize = 33792;
@@ -43,7 +39,6 @@ pub async fn connect(connection: &str) -> anyhow::Result<()> {
                 continue;
             }
             Ok(std_stream) => {
-
                 info!("Connected");
 
                 match std_stream.set_nonblocking(true) {
@@ -57,8 +52,6 @@ pub async fn connect(connection: &str) -> anyhow::Result<()> {
                 };
 
                 let stream = TcpStream::from_std(std_stream)?;
-                // let stream = Arc::new(Mutex::new(stream));
-                
                 let mut buf = vec![0u8; NETWORK_BUFFER_MAX_SIZE];
 
                 loop {
@@ -69,37 +62,33 @@ pub async fn connect(connection: &str) -> anyhow::Result<()> {
                                 Ok(json_str) => {
                                     match str::from_utf8(json_str.as_bytes()) {
                                         Ok(v) => {
-                                            let s = Rc::new(v);
-                                            // let g = v.clone();
-                                            // tokio::spawn(async move {
-                                            //     info!("{:?}",&v);
-                                            // });
-                                            info!("{:?}", s);
-                                        },
+                                            info!("{:?}", v);
+                                            v
+                                        }
                                         Err(e) => {
                                             warn!("Invalid UTF-8 sequence: '{}'.", e);
                                             break;
                                         }
                                     };
-                                    // let d = s.clone();
-                                    
-                                    // for s_plit_n in s.split(EOL).into_iter() {
-                                    //     if s_plit_n.len() > NETWORK_BUFFER_LENGTH_DIGITS {
-                                    //         // TODO Call processing and save to file
-                                    //         let v: Value = match serde_json::from_str(
-                                    //             &s_plit_n[NETWORK_BUFFER_LENGTH_DIGITS..],
-                                    //         ) {
-                                    //             Ok(json) => {
-                                    //                 trace!("Converted result: {}", json);
-                                    //                 json
-                                    //             }
-                                    //             Err(_e) => {
-                                    //                 warn!("Invalid JSON object: '{}'.", _e);
-                                    //                 serde_json::Value::Null
-                                    //             }
-                                    //         };
-                                    //     };
-                                    // }
+                                    for s_plit_n in json_str.split(EOL).into_iter() {
+                                        if s_plit_n.len() > NETWORK_BUFFER_LENGTH_DIGITS {
+                                            let v: Value = match serde_json::from_str(
+                                                &s_plit_n[NETWORK_BUFFER_LENGTH_DIGITS..],
+                                            ) {
+                                                Ok(json) => {
+                                                    trace!("Converted result: {}", json);
+                                                    json
+                                                }
+                                                Err(_e) => {
+                                                    warn!("Invalid JSON object: '{}'.", _e);
+                                                    serde_json::Value::Null
+                                                }
+                                            };
+                                            // TODO Multithreading?
+                                            // TODO Call processing and save to file
+                                            process(v);
+                                        };
+                                    }
                                 }
                                 Err(_) => {
                                     warn!("BUG: Invalid UTF-8 in buffer");

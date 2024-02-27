@@ -1,6 +1,7 @@
 pub mod cli;
 pub mod logging;
 pub mod stream;
+pub mod process;
 
 use log::error;
 use cli::Cli;

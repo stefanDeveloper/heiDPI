@@ -85,7 +85,7 @@ pub async fn connect(connection: &str) -> anyhow::Result<()> {
                                                 }
                                             };
                                             // TODO Multithreading?
-                                            // TODO Call processing and save to file
+                                            // TODO Call processing (geoip2, remove risk, remove attributes, ignore event types, ...) and save to file
                                             process(v);
                                         };
                                     }

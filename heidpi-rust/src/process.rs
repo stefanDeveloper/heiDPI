@@ -1,6 +1,5 @@
-use crate::geoip::get_geoip;
 use std::net::IpAddr;
 
-pub fn process(json: Value) {
-    get_geoip("");
-}
+use serde_json::Value;
+
+pub fn process(json: Value) {}

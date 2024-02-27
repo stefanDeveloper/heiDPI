@@ -2,6 +2,7 @@ pub mod cli;
 pub mod logging;
 pub mod stream;
 pub mod process;
+pub mod geoip;
 
 use log::error;
 use cli::Cli;

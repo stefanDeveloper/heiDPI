@@ -2,6 +2,9 @@ use std::net::IpAddr;
 use maxminddb::Reader;
 
 /// .
+struct GeoIP {
+    
+}
 
 impl GeoIP {
     pub fn get_geoip(ip: &IpAddr) -> anyhow::Result<()> {

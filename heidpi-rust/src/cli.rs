@@ -69,6 +69,7 @@ impl Cli {
                 flow_events,  
              } => {
                 // TODO Handle parameters
+                // TODO Handle config, should be global accessible
                 let mut v = stream::connect("127.0.0.1:7000").await;
             }
         }

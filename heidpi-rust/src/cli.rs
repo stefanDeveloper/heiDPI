@@ -68,6 +68,7 @@ impl Cli {
                 error_events,
                 flow_events,  
              } => {
+                // TODO Handle parameters
                 let mut v = stream::connect("127.0.0.1:7000").await;
             }
         }

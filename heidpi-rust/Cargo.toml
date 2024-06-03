@@ -11,6 +11,8 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "*", features = ["full"] }
+serde = { version = "*", features = ["derive"] }
+serde_derive = "*"
 serde_json = { version = "*" }
 log = { version = "*" }
 env_logger = { version = "*" }

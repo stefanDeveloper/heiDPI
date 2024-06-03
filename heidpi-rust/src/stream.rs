@@ -1,3 +1,6 @@
+/**
+ * Manages the network aspects, including establishing connections and reading data from sockets.
+ */
 use log::{info, trace, warn};
 use serde_json::Value;
 use std::io::{self};
@@ -6,7 +9,12 @@ use std::time::Duration;
 use std::{thread, time};
 use tokio::net::TcpStream;
 
+use tokio::sync::mpsc;
+use tokio::task;
+
 use crate::process::process;
+use crate::geoip::GeoIP;
+use crate::logging::Logging;
 
 const NETWORK_BUFFER_LENGTH_DIGITS: usize = 5;
 const NETWORK_BUFFER_MAX_SIZE: usize = 33792;
@@ -26,7 +34,14 @@ pub enum HeiDPIEventType {
     ERROR,
 }
 
-pub async fn connect(connection: &str) -> anyhow::Result<()> {
+pub async fn connect(
+    connection: &str,
+    geoip: Option<GeoIP>,
+    flow_logger: Logging,
+    daemon_logger: Logging,
+    packet_logger: Logging,
+    error_logger: Logging,
+) -> anyhow::Result<()> {
     loop {
         match std::net::TcpStream::connect(connection) {
             Err(_e) => {
@@ -52,6 +67,7 @@ pub async fn connect(connection: &str) -> anyhow::Result<()> {
                 };
 
                 let stream = TcpStream::from_std(std_stream)?;
+                let (tx, mut rx) = mpsc::channel::<(Value, Logging)>(100);
                 let mut buf = vec![0u8; NETWORK_BUFFER_MAX_SIZE];
 
                 loop {
@@ -76,14 +92,28 @@ pub async fn connect(connection: &str) -> anyhow::Result<()> {
                                             };
                                             // TODO Multithreading?
                                             // TODO Call processing (geoip2, remove risk, remove attributes, ignore event types, ...) and save to file
-                                            process(v);
-                                        };
+                                            if let Some(event_type) = v.get("event_type").and_then(|e| e.as_str()) {
+                                                let logger = match event_type {
+                                                    "flow" => flow_logger.clone(),
+                                                    "daemon" => daemon_logger.clone(),
+                                                    "packet" => packet_logger.clone(),
+                                                    "error" => error_logger.clone(),
+                                                    _ => continue,
+                                                };
+
+                                                if let Err(e) = tx.send((v, logger)).await {
+                                                    warn!("Failed to send data for processing: {}", e);
+                                                }
+                                            //process(v);
+                                            }
+                                            
+                                        }
                                     }
                                 }
                                 Err(_) => {
                                     warn!("BUG: Invalid UTF-8 in buffer");
                                 }
-                            };
+                            }
                         }
                         Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
                             continue;

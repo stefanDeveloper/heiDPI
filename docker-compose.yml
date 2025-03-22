@@ -54,12 +54,12 @@ services:
       - "3100:3100"
     volumes:
       - ./config-files/loki-config.yaml:/etc/loki/local-config.yaml  # Correct relative path
-      - ./loki/rules:/loki/rules  # Correct relative path
-      - ./loki/index:/loki/index  # Added volume for index directory
-      - ./loki/cache:/loki/cache  # Added volume for cache directory
-      - ./loki/chunks:/loki/chunks  # Added volume for chunks directory
-      - ./loki/compactor:/loki/compactor  # Added volume for compactor directory
-      - ./loki/wal:/loki/wal
+      - ./loki/rules:/loki/rules:rw  # Correct relative path
+      - ./loki/index:/loki/index:rw  # Added volume for index directory
+      - ./loki/cache:/loki/cache:rw  # Added volume for cache directory
+      - ./loki/chunks:/loki/chunks:rw  # Added volume for chunks directory
+      - ./loki/compactor:/loki/compactor:rw  # Added volume for compactor directory
+      - ./loki/wal:/loki/wal:rw
     command: -config.file=/etc/loki/local-config.yaml
     networks:
       - loki

@@ -1,0 +1,12 @@
+FROM grafana/grafana:latest
+
+ENV GF_AUTH_ANONYMOUS_ENABLED=true
+ENV GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+
+EXPOSE 3000
+
+ADD grafana-data/provisioning /etc/grafana/provisioning
+ADD grafana-data/dashboards /var/lib/grafana/dashboards
+
+
+CMD [ "grafana-reporter" ]

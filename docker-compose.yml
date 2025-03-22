@@ -41,3 +41,42 @@ services:
       - producer
     environment:
       - SHOW_DAEMON_EVENTS=1
+
+  loki:
+    image: grafana/loki:2.9.2
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./config-files/loki-config.yaml:/etc/loki/local-config.yaml  # Correct relative path
+      - ./loki/rules:/loki/rules  # Correct relative path
+      - ./loki/index:/loki/index  # Added volume for index directory
+      - ./loki/cache:/loki/cache  # Added volume for cache directory
+      - ./loki/chunks:/loki/chunks  # Added volume for chunks directory
+      - ./loki/compactor:/loki/compactor  # Added volume for compactor directory
+      - ./loki/wal:/loki/wal
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - loki
+
+  alloy:
+    image: grafana/alloy:latest
+    ports:
+      - "12345:12345"
+    volumes:
+      - ./config-files/config.alloy:/etc/alloy/config.alloy
+      - ./heidpi-logs:/tmp/heidpi-logs
+    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy --stability.level experimental
+    networks:
+      - loki
+    depends_on:
+      - loki
+
+  grafana:
+    build:
+      dockerfile: ./Dockerfile.grafana
+    volumes:
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - loki

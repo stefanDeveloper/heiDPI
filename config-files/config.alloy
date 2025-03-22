@@ -1,0 +1,30 @@
+loki.write "local_loki" {
+	endpoint {
+		url = "http://loki:3100/loki/api/v1/push"
+	}
+}
+
+local.file_match "testing_logging" {
+	path_targets = [{"__path__" = "/tmp/heidpi-logs/*.json"}]
+	sync_period = "5s"
+}
+
+loki.source.file "local_files2" {
+  targets = local.file_match.testing_logging.targets
+  //forward_to = [loki.write.local_loki.receiver]
+  forward_to = [loki.process.add_labels.receiver]
+}
+
+loki.process "add_labels" {
+  stage.json {
+    expressions = {flow_id = "flow_id"}
+  }
+
+  stage.labels {
+    values = {
+      flow_id = "flow_id",
+    }
+  }
+
+  forward_to = [loki.write.local_loki.receiver]
+}

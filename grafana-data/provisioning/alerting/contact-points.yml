@@ -1,0 +1,10 @@
+apiVersion: 1
+contactPoints:
+    - orgId: 1
+      name: heiDPI-webhook
+      receivers:
+        - uid: fegls0yjnqhvkb
+          type: webhook
+          settings:
+            url: PLACEHOLDER
+          disableResolveMessage: false

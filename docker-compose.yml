@@ -1,5 +1,8 @@
 version: "3.9"
 
+networks:
+  loki:
+
 services:
   producer:
     image: stefan96/heidpi-producer:latest

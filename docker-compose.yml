@@ -13,13 +13,13 @@ services:
     network_mode: host
     security_opt:
       - no-new-privileges
-    pids_limit: 8192
+#    pids_limit: 8192
     restart: on-failure:5
-    deploy:
-      resources:
-        limits:
-          cpus: '5'
-          memory: 32G
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '5'
+#          memory: 32G
     environment:
       - HOSTNAME=test
       - TUNE_PARAM=max-reader-threads=4,max-flows-per-thread=65536,max-idle-flows-per-thread=2048,daemon-status-interval=15000000,flow-scan-interval=15000000,generic-max-idle-time=15000001,icmp-max-idle-time=15000001,udp-max-idle-time=15000001,tcp-max-idle-time=15000001,tcp-max-post-end-flow-time=5000000
@@ -36,13 +36,13 @@ services:
     network_mode: host
     security_opt:
       - no-new-privileges
-    pids_limit: 8192
+#    pids_limit: 8192
     restart: on-failure:5
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 2G
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '1'
+#          memory: 2G
     depends_on:
       - producer
     environment:

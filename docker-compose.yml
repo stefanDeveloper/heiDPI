@@ -3,6 +3,9 @@ version: "3.9"
 networks:
   loki:
 
+volumes:
+  grafana-data:
+
 services:
   producer:
     image: stefan96/heidpi-producer:latest

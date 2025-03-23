@@ -1,5 +1,11 @@
 version: "3.9"
 
+networks:
+  loki:
+
+volumes:
+  grafana-data:
+
 services:
   producer:
     image: stefan96/heidpi-producer:latest
@@ -7,13 +13,13 @@ services:
     network_mode: host
     security_opt:
       - no-new-privileges
-    pids_limit: 8192
+#    pids_limit: 8192
     restart: on-failure:5
-    deploy:
-      resources:
-        limits:
-          cpus: '5'
-          memory: 32G
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '5'
+#          memory: 32G
     environment:
       - HOSTNAME=test
       - TUNE_PARAM=max-reader-threads=4,max-flows-per-thread=65536,max-idle-flows-per-thread=2048,daemon-status-interval=15000000,flow-scan-interval=15000000,generic-max-idle-time=15000001,icmp-max-idle-time=15000001,udp-max-idle-time=15000001,tcp-max-idle-time=15000001,tcp-max-post-end-flow-time=5000000
@@ -30,14 +36,53 @@ services:
     network_mode: host
     security_opt:
       - no-new-privileges
-    pids_limit: 8192
+#    pids_limit: 8192
     restart: on-failure:5
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 2G
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '1'
+#          memory: 2G
     depends_on:
       - producer
     environment:
       - SHOW_DAEMON_EVENTS=1
+
+  loki:
+    image: grafana/loki:2.9.2
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./config-files/loki-config.yaml:/etc/loki/local-config.yaml  # Correct relative path
+      - ./loki/rules:/loki/rules:rw  # Correct relative path
+      - ./loki/index:/loki/index:rw  # Added volume for index directory
+      - ./loki/cache:/loki/cache:rw  # Added volume for cache directory
+      - ./loki/chunks:/loki/chunks:rw  # Added volume for chunks directory
+      - ./loki/compactor:/loki/compactor:rw  # Added volume for compactor directory
+      - ./loki/wal:/loki/wal:rw
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - loki
+
+  alloy:
+    image: grafana/alloy:latest
+    ports:
+      - "12345:12345"
+    volumes:
+      - ./config-files/config.alloy:/etc/alloy/config.alloy
+      - ./heidpi-logs:/tmp/heidpi-logs
+    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy --stability.level experimental
+    networks:
+      - loki
+    depends_on:
+      - loki
+
+  grafana:
+    build:
+      dockerfile: ./Dockerfile.grafana
+    volumes:
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - loki

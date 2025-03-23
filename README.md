@@ -117,6 +117,37 @@ For a more detail view on how to customize your images, see:
 - [Producer](https://github.com/stefanDeveloper/heiDPI/blob/main/README.producer.md)
 - [Consumer](https://github.com/stefanDeveloper/heiDPI/blob/main/README.consumer.md)
 
+## Dashboarding
+
+Das Dashboard-Modul bietet eine visuelle Oberfläche zur Analyse und Überwachung von Netzwerk-Flow-Events, die durch `heiDPI` generiert und mittels `Loki` in `Grafana` bereitgestellt werden.
+
+### Dashboard
+
+Das Dashboard gliedert sich in zwei Hauptbereiche:
+
+1. **Übersichtspanels**:
+   - *Count Flows by Breed Type*: Balkendiagramm zur Darstellung der Anzahl von Flow-Events nach Klassifizierung (`ndpi_breed`).
+   - *Flow Events Time Plot*: Zeitreihenvisualisierung der Flow-Rate zur Erkennung zeitlicher Trends.
+   - *Unsafe & Tracking Flows*: Tabelle mit Flows klassifiziert als `Unsafe` oder `Tracker/Ads`.
+   - *Potentially Dangerous & Dangerous Flows*: Flows mit erhöhtem Sicherheitsrisiko.
+   - *Unrated Flows*: Flows ohne Bewertung zur weiteren Untersuchung.
+
+2. **Detailansicht pro Flow-ID**:
+   - Selektierbare Variable `Flow ID` erlaubt das gezielte Anzeigen und Analysieren einzelner Flows in dedizierten Panels.
+
+### Alerts
+
+Das System beinhaltet eine Alert-Regel zur Erkennung gefährlicher Flows:
+
+- **Dangerous Flow Events Alert**: Überwacht Flows mit `ndpi_breed="Dangerous"` und löst eine Warnung bei erkennung aus. Die Benachrichtigung verweist auf das Dashboard zur detaillierten Analyse.
+
+> Hinweis: Die URL des Webhooks muss vor dem produktiven Einsatz in der Datei `./grafana-data/provisioning/alerting/contact-points.yml` angepasst werden.
+
+### Provisionierung
+
+Die Dashboard Funktionalität wird über `docker compose` gesteuert und startet zusammen mit heiDPI.
+Grafana ist unter `localhost:3000` erreichbar.
+
 ## License
 
 This project is licensed under the GPL-3.0 license - see the [LICENSE.md](https://github.com/stefanDeveloper/heiDPI/blob/main/LICENSE) file for details.

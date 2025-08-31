@@ -49,3 +49,8 @@ target_link_libraries(heidpi_cpp PRIVATE
         maxminddb::maxminddb
 )
 
+include(GNUInstallDirs)
+
+install(TARGETS heidpi_cpp
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+

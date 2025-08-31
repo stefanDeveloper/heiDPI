@@ -4,41 +4,39 @@ ARG CMAKE_BUILD_TYPE=Release
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential cmake pkg-config git ca-certificates \
-    # <-- hier dev abhängigkeiten
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
-
 COPY heidpi-logger-cpp/ ./heidpi-logger-cpp/
 
-# CMake Build
-RUN cmake -S heidpi-logger-cpp -B /build -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} \
- && cmake --build /build --target heidpi-logger-cpp -- -j$(nproc)
-# OPTIONAL
-# RUN ctest --test-dir /build --output-on-failure || true
-
+RUN cmake -S heidpi-logger-cpp -B /build \
+      -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} \
+      -DBUILD_TESTING=OFF \
+      -DMAXMINDDB_BUILD_BINARIES=OFF \
+      -DMAXMINDDB_TOOLS=OFF \
+      -DMAXMINDDB_INSTALL=OFF \
+ && cmake --build /build --target heidpi_cpp -- -j"$(nproc)" \
+ && strip /build/heidpi_cpp || true
 
 # ---------- Runtime stage ----------
 FROM debian:bookworm-slim AS runtime
 
-# minimale Runtime-Libs
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libstdc++6 ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Non-root user
+# non-root
 RUN useradd -r -u 10001 appuser
 WORKDIR /app
 
 # Configs (aus Repo-Root)
 COPY config.yml /app/config.yml
 
-# Binary aus Build
-COPY --from=build /build/heidpi-logger-cpp /usr/local/bin/heidpi-logger-cpp
+COPY --from=build /build/heidpi_cpp /usr/local/bin/app
 
 ENV WRITE="/var/log" \
     SHOW_FLOW_EVENTS=1 \
-    SHOW_PACKET_EVENTS=0 \
+    SHOW_PACKET_EVENTS=1 \
     SHOW_ERROR_EVENTS=0 \
     SHOW_DAEMON_EVENTS=0 \
     UNIX="" \
@@ -47,7 +45,5 @@ ENV WRITE="/var/log" \
 
 USER appuser
 
-# Optional Healthcheck, wenn Binary das zukünftig unterstützt
-# HEALTHCHECK --interval=30s --timeout=5s CMD ["/usr/local/bin/heidpi-logger-cpp","--healthcheck"]
-
+ENTRYPOINT ["/usr/local/bin/app"]
 CMD ["--config","/app/config.yml"]

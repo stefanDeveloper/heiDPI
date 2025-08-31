@@ -7,7 +7,7 @@ services:
     network_mode: host
     security_opt:
       - no-new-privileges
-    pids_limit: 8192
+#    pids_limit: 8192
     restart: on-failure:5
     deploy:
       resources:
@@ -22,7 +22,10 @@ services:
       - SSL_SHA1_URL=https://sslbl.abuse.ch/blacklist/sslblacklist.csv
 
   consumer:
-    image: stefan96/heidpi-consumer:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.consumer
+      #image: stefan96/heidpi-consumer:latest
     container_name: heidpi_consumer
     volumes:
       - ./heidpi-logger-py-logs:/var/log/:rw
@@ -30,7 +33,7 @@ services:
     network_mode: host
     security_opt:
       - no-new-privileges
-    pids_limit: 8192
+#    pids_limit: 8192
     restart: on-failure:5
     deploy:
       resources:
@@ -41,3 +44,4 @@ services:
       - producer
     environment:
       - SHOW_DAEMON_EVENTS=1
+      - SHOW_PACKET_EVENTS=1

@@ -1,7 +1,7 @@
 appName: heiDPI
 
 logging:
-  level: INFO
+  level: ERROR
   encoding: utf-8
   format: "%(asctime)s %(levelname)s:%(message)s"
   datefmt: "%Y-%m-%dT%I:%M:%S"

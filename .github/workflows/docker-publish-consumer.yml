@@ -12,7 +12,7 @@ on:
 
 env:
   REGISTRY: docker.io 
-  IMAGE_NAME: stefan96/heidpi-consumer
+  IMAGE_NAME: stefan96/heidpi-logger-py-consumer
 
 
 jobs:
@@ -84,7 +84,7 @@ jobs:
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
-          tags: stefan96/heidpi-consumer:latest
+          tags: stefan96/heidpi-logger-py-consumer:latest
           labels: ${{ steps.meta.outputs.labels }}
           file: ./Dockerfile.consumer
           cache-from: type=gha

@@ -25,7 +25,7 @@ services:
     image: stefan96/heidpi-consumer:latest
     container_name: heidpi_consumer
     volumes:
-      - ./heidpi-logs:/var/log/:rw
+      - ./heidpi-logger-py-logs:/var/log/:rw
       - ./config.yml:/usr/src/app/config.yml:ro
     network_mode: host
     security_opt:

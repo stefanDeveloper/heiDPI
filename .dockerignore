@@ -1,1 +1,15 @@
 docker-compose.yml
+.git
+.github
+build
+cmake-build-*
+**/__pycache__
+**/*.o
+**/*.a
+**/*.log
+tests/
+nDPId/
+heidpi-logger-py/
+heidpi-rust/
+*.swp
+.DS_Store

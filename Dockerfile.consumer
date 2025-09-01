@@ -7,9 +7,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
-COPY heidpi-logger-cpp/ ./heidpi-logger-cpp/
+COPY heidpi-logger/ ./heidpi-logger/
 
-RUN cmake -S heidpi-logger-cpp -B /build \
+RUN cmake -S heidpi-logger -B /build \
       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} \
       -DBUILD_TESTING=OFF \
       -DMAXMINDDB_BUILD_BINARIES=OFF \

@@ -12,7 +12,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '5'
+          cpus: '1'
           memory: 32G
     environment:
       - HOSTNAME=test
@@ -25,10 +25,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.consumer
-      #image: stefan96/heidpi-consumer:latest
+    #image: stefan96/heidpi-consumer:latest
     container_name: heidpi_consumer
     volumes:
-      - ./heidpi-logger-py-logs:/var/log/:rw
+      - ./heidpi-logs:/var/log/:rw
       - ./config.yml:/usr/src/app/config.yml:ro
     network_mode: host
     security_opt:
@@ -45,3 +45,5 @@ services:
     environment:
       - SHOW_DAEMON_EVENTS=1
       - SHOW_PACKET_EVENTS=1
+      - SHOW_ERROR_EVENTS=1
+      - SHOW_FLOW_EVENTS=1

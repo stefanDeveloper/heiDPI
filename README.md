@@ -17,25 +17,6 @@
   </td>
 </tr>
 <tr>
-  <td><b>Latest Release</b></td>
-  <td>
-    <a href="https://pypi.python.org/pypi/heidpi">
-    <img src="https://img.shields.io/pypi/v/heidpi.svg?logo=pypi&style=for-the-badge" alt="latest release" />
-    </a>
-  </td>
-</tr>
-<tr>
-  <td><b>Supported Versions</b></td>
-  <td>
-    <a href="https://pypi.org/project/heidpi/">
-    <img src="https://img.shields.io/pypi/pyversions/heidpi?logo=python&style=for-the-badge" alt="python3" />
-    </a>
-    <a href="https://pypi.org/project/heidpi/">
-    <img src="https://img.shields.io/badge/pypy-3.7%20%7C%203.8%20%7C%203.9-blue?logo=pypy&style=for-the-badge" alt="pypy3" />
-    </a>
-  </td>
-</tr>
-<tr>
   <td><b>Project License</b></td>
   <td>
     <a href="https://github.com/stefanDeveloper/heidpi/blob/main/LICENSE">
@@ -86,15 +67,15 @@ In order to run this container you'll need docker installed.
 Pull images:
 
 ```sh
-docker pull stefan96/heidpi-logger-py-producer:main
-docker pull stefan96/heidpi-logger-py-consumer:main
+docker pull stefan96/heidpi-producer:main
+docker pull stefan96/heidpi-consumer:main
 ```
 
 Run producer and consumer separately from each other using UDP socket:
 
 ```sh
-docker run -p 127.0.0.1:7000:7000 --net host stefan96/heidpi-logger-py-producer:main
-docker run -e HOST=127.0.0.1 --net host stefan96/heidpi-logger-py-consumer:main
+docker run -p 127.0.0.1:7000:7000 --net host stefan96/heidpi-producer:main
+docker run -e HOST=127.0.0.1 --net host stefan96/heidpi-consumer:main
 ```
 
 or use the `docker-compose.yml`:
@@ -106,8 +87,8 @@ docker-compose up
 Additionally, you use a UNIX socket:
 
 ```sh
-docker run -v ${PWD}/heidpi-logger-py-data:/tmp/ --net host stefan96/heidpi-logger-py-producer:main
-docker run -v ${PWD}/heidpi-logger-py-data:/tmp/ -v ${PWD}/heidpi-logger-py-logs:/var/log -e UNIX=/tmp/nDPIsrvd-daemon-distributor.sock --net host stefan96/heidpi-logger-py-consumer:main
+docker run -v ${PWD}/heidpi-data:/tmp/ --net host stefan96/heidpi-producer:main
+docker run -v ${PWD}/heidpi-data:/tmp/ -v ${PWD}/heidpi-logs:/var/log -e UNIX=/tmp/nDPIsrvd-daemon-distributor.sock --net host stefan96/heidpi-consumer:main
 ```
 
 ## Configuration

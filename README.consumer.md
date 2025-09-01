@@ -7,33 +7,6 @@
 
 <table>
 <tr>
-  <td><b>Live Notebook</b></td>
-  <td>
-    <a href="https://mybinder.org/v2/gh/heidpi/heiDPI-tutorials/main?filepath=demo_notebook.ipynb">
-    <img src="https://img.shields.io/badge/notebook-launch-blue?logo=jupyter&style=for-the-badge" alt="live notebook" />
-    </a>
-  </td>
-</tr>
-<tr>
-  <td><b>Latest Release</b></td>
-  <td>
-    <a href="https://pypi.python.org/pypi/heidpi">
-    <img src="https://img.shields.io/pypi/v/heidpi.svg?logo=pypi&style=for-the-badge" alt="latest release" />
-    </a>
-  </td>
-</tr>
-<tr>
-  <td><b>Supported Versions</b></td>
-  <td>
-    <a href="https://pypi.org/project/heidpi/">
-    <img src="https://img.shields.io/pypi/pyversions/heidpi?logo=python&style=for-the-badge" alt="python3" />
-    </a>
-    <a href="https://pypi.org/project/heidpi/">
-    <img src="https://img.shields.io/badge/pypy-3.7%20%7C%203.8%20%7C%203.9-blue?logo=pypy&style=for-the-badge" alt="pypy3" />
-    </a>
-  </td>
-</tr>
-<tr>
   <td><b>Project License</b></td>
   <td>
     <a href="https://github.com/stefanDeveloper/heidpi/blob/main/LICENSE">
@@ -59,32 +32,19 @@
 Install using PyPi:
 
 ```sh
-pip install heiDPI
+cd ./heidpi-logger && cmake . && make
 ```
 
 Use the CLI for quick usage:
 
 ```
-> heiDPI -h
-usage: heiDPI [-h] [--host HOST | --unix UNIX] [--port PORT] [--write WRITE] [--config CONFIG] [--show-daemon-events SHOW_DAEMON_EVENTS] [--show-packet-events SHOW_PACKET_EVENTS] [--show-error-events SHOW_ERROR_EVENTS] [--show-flow-events SHOW_FLOW_EVENTS]
-
-heiDPI Python Interface
-
-options:
-  -h, --help            show this help message and exit
-  --host HOST           nDPIsrvd host IP (default: None)
-  --unix UNIX           nDPIsrvd unix socket path (default: None)
-  --port PORT           nDPIsrvd TCP port (default: 7000)
-  --write WRITE         heiDPI write path for logs (default: /var/log)
-  --config CONFIG       heiDPI write path for logs (default: /home/smachmeier/projects/emcl/heiDPI/config.yml)
-  --show-daemon-events SHOW_DAEMON_EVENTS
-                        heiDPI shows daemon events (default: 0)
-  --show-packet-events SHOW_PACKET_EVENTS
-                        heiDPI shows packet events (default: 0)
-  --show-error-events SHOW_ERROR_EVENTS
-                        heiDPI shows error events (default: 0)
-  --show-flow-events SHOW_FLOW_EVENTS
-                        heiDPI shows flow events (default: 0)
+> ./heidpi_cpp -h
+usage: heidpi_cpp [-h] [--host HOST | --unix UNIX] [--port PORT] [--write WRITE]
+            [--config CONFIG] [--filter FILTER]
+            [--show-daemon-events]
+            [--show-packet-events]
+            [--show-error-events]
+            [--show-flow-events]
 ```
 
 ### Prerequisities

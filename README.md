@@ -17,25 +17,6 @@
   </td>
 </tr>
 <tr>
-  <td><b>Latest Release</b></td>
-  <td>
-    <a href="https://pypi.python.org/pypi/heidpi">
-    <img src="https://img.shields.io/pypi/v/heidpi.svg?logo=pypi&style=for-the-badge" alt="latest release" />
-    </a>
-  </td>
-</tr>
-<tr>
-  <td><b>Supported Versions</b></td>
-  <td>
-    <a href="https://pypi.org/project/heidpi/">
-    <img src="https://img.shields.io/pypi/pyversions/heidpi?logo=python&style=for-the-badge" alt="python3" />
-    </a>
-    <a href="https://pypi.org/project/heidpi/">
-    <img src="https://img.shields.io/badge/pypy-3.7%20%7C%203.8%20%7C%203.9-blue?logo=pypy&style=for-the-badge" alt="pypy3" />
-    </a>
-  </td>
-</tr>
-<tr>
   <td><b>Project License</b></td>
   <td>
     <a href="https://github.com/stefanDeveloper/heidpi/blob/main/LICENSE">

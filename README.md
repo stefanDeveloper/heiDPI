@@ -86,15 +86,15 @@ In order to run this container you'll need docker installed.
 Pull images:
 
 ```sh
-docker pull stefan96/heidpi-producer:main
-docker pull stefan96/heidpi-consumer:main
+docker pull stefan96/heidpi-logger-py-producer:main
+docker pull stefan96/heidpi-logger-py-consumer:main
 ```
 
 Run producer and consumer separately from each other using UDP socket:
 
 ```sh
-docker run -p 127.0.0.1:7000:7000 --net host stefan96/heidpi-producer:main
-docker run -e HOST=127.0.0.1 --net host stefan96/heidpi-consumer:main
+docker run -p 127.0.0.1:7000:7000 --net host stefan96/heidpi-logger-py-producer:main
+docker run -e HOST=127.0.0.1 --net host stefan96/heidpi-logger-py-consumer:main
 ```
 
 or use the `docker-compose.yml`:
@@ -106,8 +106,8 @@ docker-compose up
 Additionally, you use a UNIX socket:
 
 ```sh
-docker run -v ${PWD}/heidpi-data:/tmp/ --net host stefan96/heidpi-producer:main
-docker run -v ${PWD}/heidpi-data:/tmp/ -v ${PWD}/heidpi-logs:/var/log -e UNIX=/tmp/nDPIsrvd-daemon-distributor.sock --net host stefan96/heidpi-consumer:main
+docker run -v ${PWD}/heidpi-logger-py-data:/tmp/ --net host stefan96/heidpi-logger-py-producer:main
+docker run -v ${PWD}/heidpi-logger-py-data:/tmp/ -v ${PWD}/heidpi-logger-py-logs:/var/log -e UNIX=/tmp/nDPIsrvd-daemon-distributor.sock --net host stefan96/heidpi-logger-py-consumer:main
 ```
 
 ## Configuration

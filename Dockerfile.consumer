@@ -1,24 +1,49 @@
-FROM pypy:3.9-slim-bookworm
+# ---------- Build stage ----------
+FROM debian:bookworm AS build
+ARG CMAKE_BUILD_TYPE=Release
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential cmake pkg-config git ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+COPY heidpi-logger/ ./heidpi-logger/
+
+RUN cmake -S heidpi-logger -B /build \
+      -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} \
+      -DBUILD_TESTING=OFF \
+      -DMAXMINDDB_BUILD_BINARIES=OFF \
+      -DMAXMINDDB_TOOLS=OFF \
+      -DMAXMINDDB_INSTALL=OFF \
+ && cmake --build /build --target heidpi_cpp -- -j"$(nproc)" \
+ && strip /build/heidpi_cpp || true
+
+# ---------- Runtime stage ----------
+FROM debian:bookworm-slim AS runtime
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libstdc++6 ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# non-root
+RUN useradd -r -u 10001 appuser
+WORKDIR /app
+
+# Configs (aus Repo-Root)
+COPY config.yml /app/config.yml
+
+COPY --from=build /build/heidpi_cpp /usr/local/bin/app
 
 ENV WRITE="/var/log" \
     SHOW_FLOW_EVENTS=1 \
-    SHOW_PACKET_EVENTS=0 \
+    SHOW_PACKET_EVENTS=1 \
     SHOW_ERROR_EVENTS=0 \
     SHOW_DAEMON_EVENTS=0 \
     UNIX="" \
     PORT=7000 \
     HOST=""
 
-WORKDIR /usr/src/app
+USER appuser
 
-COPY heidpi ./ \
-     config.yml ./ \
-     LICENSE ./ \
-     README.md ./ \
-     requirements.txt ./ \
-     pyproject.toml ./
-
-RUN pip install . \
-    pip install -r requirements.txt
-
-CMD [ "heiDPI"]
+ENTRYPOINT ["/usr/local/bin/app"]
+CMD ["--config","/app/config.yml"]

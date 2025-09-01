@@ -1,6 +1,4 @@
-[include](../heiDPI_benchmark/heidpi_logger_cpp_port/include)
-[src](../heiDPI_benchmark/heidpi_logger_cpp_port/src)
-[CMakeLists.txt](../heiDPI_benchmark/heidpi_logger_cpp_port/CMakeLists.txt)![heiFIP Logo](https://raw.githubusercontent.com/stefanDeveloper/heiDPI/main/assets/heidpi_logo.png?raw=true)
+![heiFIP Logo](https://raw.githubusercontent.com/stefanDeveloper/heiDPI/main/assets/heidpi_logo.png?raw=true)
 
 
 --------------------------------------------------------------------------------

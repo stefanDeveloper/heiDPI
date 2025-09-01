@@ -17,8 +17,6 @@
 <tr>
   <td><b>Continuous Integration</b></td>
   <td>
-    <a href="https://github.com/stefanDeveloper/heidpi/actions/workflows/python-app.yml">
-    <img src="https://img.shields.io/github/actions/workflow/status/stefanDeveloper/heidpi/python-app.yml?branch=main&logo=linux&style=for-the-badge&label=linux" alt="Linux WorkFlows" />
     </a>
     <a href="https://github.com/stefanDeveloper/heifip/actions/workflows/docker-publish-consumer.yml">
     <img src="https://img.shields.io/github/actions/workflow/status/stefanDeveloper/heidpi/docker-publish-consumer.yml?branch=main&logo=docker&style=for-the-badge&label=docker" alt="Docker WorkFlows" />

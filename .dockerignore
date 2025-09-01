@@ -8,7 +8,6 @@ cmake-build-*
 **/*.a
 **/*.log
 tests/
-nDPId/
 heidpi-logger-py/
 heidpi-rust/
 *.swp

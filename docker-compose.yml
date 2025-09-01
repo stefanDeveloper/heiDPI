@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   producer:
     image: stefan96/heidpi-producer:latest

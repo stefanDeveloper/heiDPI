@@ -9,14 +9,6 @@
 
 <table>
 <tr>
-  <td><b>Live Notebook</b></td>
-  <td>
-    <a href="https://mybinder.org/v2/gh/heidpi/heiDPI-tutorials/main?filepath=demo_notebook.ipynb">
-    <img src="https://img.shields.io/badge/notebook-launch-blue?logo=jupyter&style=for-the-badge" alt="live notebook" />
-    </a>
-  </td>
-</tr>
-<tr>
   <td><b>Project License</b></td>
   <td>
     <a href="https://github.com/stefanDeveloper/heidpi/blob/main/LICENSE">
@@ -27,9 +19,6 @@
 <tr>
   <td><b>Continuous Integration</b></td>
   <td>
-    <a href="https://github.com/stefanDeveloper/heidpi/actions/workflows/python-app.yml">
-    <img src="https://img.shields.io/github/actions/workflow/status/stefanDeveloper/heidpi/python-app.yml?branch=main&logo=linux&style=for-the-badge&label=linux" alt="Linux WorkFlows" />
-    </a>
     <a href="https://github.com/stefanDeveloper/heifip/actions/workflows/docker-publish-consumer.yml">
     <img src="https://img.shields.io/github/actions/workflow/status/stefanDeveloper/heidpi/docker-publish-consumer.yml?branch=main&logo=docker&style=for-the-badge&label=docker" alt="Docker WorkFlows" />
     </a>

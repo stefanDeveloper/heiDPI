@@ -1,4 +1,5 @@
-FROM alpine:3.19.0 as builder
+# ---------- Build stage ----------
+FROM alpine:3.22.1 as builder
 
 WORKDIR /root
 RUN apk update && \
@@ -25,6 +26,7 @@ COPY nDPId/config.h nDPId
 
 RUN cd nDPId && mkdir build && cd build && cmake .. -DBUILD_NDPI=ON && make
 
+# ---------- Runtime stage ----------
 FROM alpine:3.22.1 as runtime
 
 ENV MAX_BUFFERED_LINES=1024 \

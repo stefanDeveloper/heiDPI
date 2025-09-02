@@ -1,24 +1,24 @@
 # ---------- Build stage ----------
-FROM alpine:3.22.1 as builder
+FROM alpine:3.22.1 AS builder
 
 WORKDIR /root
-RUN apk update && \
-    apk add --no-cache git \
-                       make \
-                       cmake \
-                       clang \
-                       clang-dev \
-                       make \
-                       automake \
-                       gcc \
-                       g++ \
-                       libc-dev \
-                       linux-headers \
-                       pkgconfig \
-                       libpcap-dev \
-                       autoconf \
-                       bash \
-                       libtool
+
+RUN apk add --no-cache \
+    git \
+    cmake \
+    clang \
+    clang-dev \
+    gcc \
+    g++ \
+    libc-dev \
+    linux-headers \
+    pkgconfig \
+    libpcap-dev \
+    autoconf \
+    automake \
+    libtool \
+    bash \
+    make
 
 RUN git clone --branch 1.6 https://github.com/utoni/nDPId.git
 
@@ -27,7 +27,7 @@ COPY nDPId/config.h nDPId
 RUN cd nDPId && mkdir build && cd build && cmake .. -DBUILD_NDPI=ON && make
 
 # ---------- Runtime stage ----------
-FROM alpine:3.22.1 as runtime
+FROM alpine:3.22.1 AS runtime
 
 ENV MAX_BUFFERED_LINES=1024 \
     MAX_THREADS=4 \
@@ -43,14 +43,15 @@ ENV MAX_BUFFERED_LINES=1024 \
     HOSTNAME=""
 
 WORKDIR /root
-RUN apk update && \
-    apk add --no-cache curl libpcap-dev bash
 
-COPY --from=builder /root/nDPId/libnDPI/ /root/
-COPY --from=builder /root/nDPId/build/nDPIsrvd /root/nDPId/build/nDPId /root/
+RUN apk add --no-cache libpcap curl
+
+COPY --from=builder /root/nDPId/libnDPI/libndpi.so* /root/
+COPY --from=builder /root/nDPId/build/nDPIsrvd /root/
+COPY --from=builder /root/nDPId/build/nDPId /root/
 
 COPY docker-entrypoint.sh /root/
 RUN chmod +x /root/docker-entrypoint.sh
 
-ENTRYPOINT ["/bin/bash", "/root/docker-entrypoint.sh"]
+ENTRYPOINT ["/bin/sh", "/root/docker-entrypoint.sh"]
 CMD ["nDPId"]

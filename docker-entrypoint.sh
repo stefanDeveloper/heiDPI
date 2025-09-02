@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 MY_INFO="\
 ###########################################
@@ -11,50 +11,74 @@ Starting services
 
 echo "$MY_INFO"
 
-# exit script if any command fails (non-zero value)
+# Exit on any command failure
 set -e
-params_ndpisrvd=()
-params_ndpid=()
+
+params_ndpisrvd=""
+params_ndpid=""
 
 ###########################################
 ### Create params for nDPIsrvd ###
 ###########################################  
 
-[[ $MAX_BUFFERED_LINES -gt 0 ]] && params_ndpisrvd+=(-C $MAX_BUFFERED_LINES)
+if [ "$MAX_BUFFERED_LINES" -gt 0 ] 2>/dev/null; then
+    params_ndpisrvd="$params_ndpisrvd -C $MAX_BUFFERED_LINES"
+fi
 
 ###########################################
 ### Create params for nDPId ###
 ###########################################
 
-regex='(https?|ftp|file)://[-[:alnum:]\+&@#/%?=~_|!:,.;]*[-[:alnum:]\+&@#/%=~_|]'
+url_regex="^\(https\?\|ftp\|file\)://"
 
-if [[ $JA3_URL =~ $regex ]]; then
-    curl "$JA3_URL" > /root/ja3_fingerprints.csv
-    params_ndpid+=(-J /root/ja3_fingerprints.csv)
+case "$JA3_URL" in
+    http://* | https://* | ftp://* | file://*)
+        curl "$JA3_URL" > /root/ja3_fingerprints.csv
+        params_ndpid="$params_ndpid -J /root/ja3_fingerprints.csv"
+        ;;
+esac
+
+case "$SSL_SHA1_URL" in
+    http://* | https://* | ftp://* | file://*)
+        curl "$SSL_SHA1_URL" > /root/sslblacklist.csv
+        params_ndpid="$params_ndpid -S /root/sslblacklist.csv"
+        ;;
+esac
+
+if [ -n "$INTERFACE" ]; then
+    params_ndpid="$params_ndpid -i $INTERFACE"
 fi
 
-if [[ $SSL_SHA1_URL =~ $regex ]]; then
-    curl "$SSL_SHA1_URL" > /root/sslblacklist.csv
-    params_ndpid+=(-S /root/sslblacklist.csv)
+if [ "$FLOW_ANALYSIS" = "1" ]; then
+    params_ndpid="$params_ndpid -A"
 fi
 
-[[ -n $INTERFACE ]] && params_ndpid+=(-i $INTERFACE)
+if [ -n "$TUNE_PARAM" ]; then
+    OLD_IFS="$IFS"
+    IFS=','
 
-[[ $FLOW_ANALYSIS = 1 ]] && params_ndpid+=(-A)
-
-if [[ -n $TUNE_PARAM ]]; then
-    for word in $(echo $TUNE_PARAM | tr "," "\n"); do
-        params_ndpid+=(-o $word)
+    for word in $TUNE_PARAM; do
+        params_ndpid="$params_ndpid -o $word"
     done
+
+    IFS="$OLD_IFS"
 fi
 
-[[ -n $PCAP_FILTER ]] && params_ndpid+=(-B $PCAP_FILTER)
+if [ -n "$PCAP_FILTER" ]; then
+    params_ndpid="$params_ndpid -B $PCAP_FILTER"
+fi
 
-[[ -n $NDPI_CUSTOM_PROTOCOLS ]] && params_ndpid+=(-P $NDPI_CUSTOM_PROTOCOLS)
+if [ -n "$NDPI_CUSTOM_PROTOCOLS" ]; then
+    params_ndpid="$params_ndpid -P $NDPI_CUSTOM_PROTOCOLS"
+fi
 
-[[ -n $NDPI_CUSTOM_CATEGORIES ]] && params_ndpid+=(-C $NDPI_CUSTOM_CATEGORIES)
+if [ -n "$NDPI_CUSTOM_CATEGORIES" ]; then
+    params_ndpid="$params_ndpid -C $NDPI_CUSTOM_CATEGORIES"
+fi
 
-[[ -n $HOSTNAME ]] && params_ndpid+=(-a $HOSTNAME)
+if [ -n "$HOSTNAME" ]; then
+    params_ndpid="$params_ndpid -a $HOSTNAME"
+fi
 
 ###########################################
 ### Start nDPIsrvd ###
@@ -62,14 +86,15 @@ fi
 
 echo "Start nDPIsrvd..."
 
-/root/nDPIsrvd -p /tmp/nDPIsrvd-daemon.pid \
-            -c /tmp/nDPIsrvd-daemon-collector.sock \
-            -s /tmp/nDPIsrvd-daemon-distributor.sock \
-            -S 0.0.0.0:$PORT \
-            -u root \
-            -d \
-            -L /tmp/nDPIsrvd.log \
-            "${params_ndpisrvd[@]}"
+# Use eval to expand parameter string correctly
+eval /root/nDPIsrvd -p /tmp/nDPIsrvd-daemon.pid \
+    -c /tmp/nDPIsrvd-daemon-collector.sock \
+    -s /tmp/nDPIsrvd-daemon-distributor.sock \
+    -S 0.0.0.0:$PORT \
+    -u root \
+    -d \
+    -L /tmp/nDPIsrvd.log \
+    $params_ndpisrvd
 
 ###########################################
 ### Start nDPId ###
@@ -78,7 +103,7 @@ echo "Start nDPIsrvd..."
 echo "Start nDPId..."
 
 exec /root/nDPId -p /tmp/nDPId-daemon.pid \
-            -c /tmp/nDPIsrvd-daemon-collector.sock \
-            -u root \
-            -L /tmp/nDPId.log \
-            "${params_ndpid[@]}"
+    -c /tmp/nDPIsrvd-daemon-collector.sock \
+    -u root \
+    -L /tmp/nDPId.log \
+    $params_ndpid

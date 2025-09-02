@@ -16,11 +16,11 @@ public:
 
     void enrich(const std::string &src_ip, const std::string &dst_ip,
                 nlohmann::json &out) const;
+protected:
+    virtual nlohmann::json lookup(const std::string &ip) const;
+    bool loaded{false};
 
 private:
-    nlohmann::json lookup(const std::string &ip) const;
-
     MMDB_s mmdb{};
-    bool loaded{false};
     std::vector<std::string> keys;
 };

@@ -2,9 +2,12 @@
 #include "Logger.hpp"
 #include <sstream>
 
-namespace {
-nlohmann::json entryToJson(const MMDB_s &db, const MMDB_entry_data_s &entry) {
-    switch (entry.type) {
+namespace
+{
+    nlohmann::json entryToJson(const MMDB_s &db, const MMDB_entry_data_s &entry)
+    {
+        switch (entry.type)
+        {
         case MMDB_DATA_TYPE_UTF8_STRING:
             return std::string(entry.utf8_string, entry.data_size);
         case MMDB_DATA_TYPE_DOUBLE:
@@ -21,18 +24,22 @@ nlohmann::json entryToJson(const MMDB_s &db, const MMDB_entry_data_s &entry) {
             return entry.uint64;
         case MMDB_DATA_TYPE_BOOLEAN:
             return static_cast<bool>(entry.boolean);
-        case MMDB_DATA_TYPE_MAP: {
+        case MMDB_DATA_TYPE_MAP:
+        {
             MMDB_entry_s sub{&db, entry.offset};
             MMDB_entry_data_list_s *list = nullptr;
-            if (MMDB_get_entry_data_list(&sub, &list) == MMDB_SUCCESS && list) {
+            if (MMDB_get_entry_data_list(&sub, &list) == MMDB_SUCCESS && list)
+            {
                 nlohmann::json obj = nlohmann::json::object();
                 MMDB_entry_data_list_s *ptr = list;
-                while (ptr && ptr->next) {
+                while (ptr && ptr->next)
+                {
                     auto key = ptr->entry_data;
                     ptr = ptr->next;
                     auto val = ptr->entry_data;
                     ptr = ptr->next;
-                    if (key.type != MMDB_DATA_TYPE_UTF8_STRING) continue;
+                    if (key.type != MMDB_DATA_TYPE_UTF8_STRING)
+                        continue;
                     std::string k(key.utf8_string, key.data_size);
                     obj[k] = entryToJson(db, val);
                 }
@@ -41,13 +48,16 @@ nlohmann::json entryToJson(const MMDB_s &db, const MMDB_entry_data_s &entry) {
             }
             break;
         }
-        case MMDB_DATA_TYPE_ARRAY: {
+        case MMDB_DATA_TYPE_ARRAY:
+        {
             MMDB_entry_s sub{&db, entry.offset};
             MMDB_entry_data_list_s *list = nullptr;
-            if (MMDB_get_entry_data_list(&sub, &list) == MMDB_SUCCESS && list) {
+            if (MMDB_get_entry_data_list(&sub, &list) == MMDB_SUCCESS && list)
+            {
                 nlohmann::json arr = nlohmann::json::array();
                 MMDB_entry_data_list_s *ptr = list;
-                while (ptr) {
+                while (ptr)
+                {
                     arr.push_back(entryToJson(db, ptr->entry_data));
                     ptr = ptr->next;
                 }
@@ -58,61 +68,78 @@ nlohmann::json entryToJson(const MMDB_s &db, const MMDB_entry_data_s &entry) {
         }
         default:
             break;
+        }
+        return {};
     }
-    return {};
-}
 } // namespace
 
 GeoIP::GeoIP(const std::string &path, const std::vector<std::string> &k)
-    : keys(k) {
+    : keys(k)
+{
     int status = MMDB_open(path.c_str(), MMDB_MODE_MMAP, &mmdb);
-    if (status != MMDB_SUCCESS) {
+    if (status != MMDB_SUCCESS)
+    {
         Logger::error(std::string("GeoIP open failed: ") + path + " " + MMDB_strerror(status));
         loaded = false;
-    } else {
+    }
+    else
+    {
         loaded = true;
     }
 }
 
-GeoIP::~GeoIP() {
-    if (loaded) {
+GeoIP::~GeoIP()
+{
+    if (loaded)
+    {
         MMDB_close(&mmdb);
     }
 }
 
-nlohmann::json GeoIP::lookup(const std::string &ip) const {
+nlohmann::json GeoIP::lookup(const std::string &ip) const
+{
     nlohmann::json result;
-    if (!loaded || ip.empty()) return result;
+    if (!loaded || ip.empty())
+        return result;
 
     int gai_error = 0, mmdb_error = 0;
     MMDB_lookup_result_s res = MMDB_lookup_string(&mmdb, ip.c_str(), &gai_error, &mmdb_error);
-    if (gai_error != 0 || mmdb_error != MMDB_SUCCESS || !res.found_entry) {
+    if (gai_error != 0 || mmdb_error != MMDB_SUCCESS || !res.found_entry)
+    {
         return result;
     }
 
-    for (const auto &key : keys) {
+    for (const auto &key : keys)
+    {
         // Split dotted key path into parts
         std::vector<std::string> parts;
         std::stringstream ss(key);
         std::string part;
-        while (std::getline(ss, part, '.')) parts.push_back(part);
+        while (std::getline(ss, part, '.'))
+            parts.push_back(part);
 
-        std::vector<const char*> path;
-        for (const auto &p : parts) path.push_back(p.c_str());
+        std::vector<const char *> path;
+        for (const auto &p : parts)
+            path.push_back(p.c_str());
         path.push_back(nullptr);
 
         MMDB_entry_data_s entry{};
         int status = MMDB_aget_value(&res.entry, &entry, path.data());
-        if (status != MMDB_SUCCESS || !entry.has_data) continue;
-        
+        if (status != MMDB_SUCCESS || !entry.has_data)
+            continue;
+
         const std::string &field = parts.back();
 
         nlohmann::json value = entryToJson(mmdb, entry);
 
-        if (!value.is_null() && !(value.is_object() && value.empty())) {
-            if (parts.size() == 1) {
+        if (!value.is_null() && !(value.is_object() && value.empty()))
+        {
+            if (parts.size() == 1)
+            {
                 result[parts[0]] = value;
-            } else {
+            }
+            else
+            {
                 result[field] = value;
             }
         }
@@ -121,14 +148,18 @@ nlohmann::json GeoIP::lookup(const std::string &ip) const {
 }
 
 void GeoIP::enrich(const std::string &src_ip, const std::string &dst_ip,
-                   nlohmann::json &out) const {
-    if (!loaded) return;
+                   nlohmann::json &out) const
+{
+    if (!loaded)
+        return;
     auto src = lookup(src_ip);
-    if (!src.empty()) {
+    if (!src.empty())
+    {
         out["src_geoip2_city"] = src;
     }
     auto dst = lookup(dst_ip);
-    if (!dst.empty()) {
+    if (!dst.empty())
+    {
         out["dst_geoip2_city"] = dst;
     }
 }

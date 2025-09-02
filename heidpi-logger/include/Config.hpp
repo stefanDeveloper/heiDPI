@@ -9,10 +9,7 @@
  */
 struct LoggingConfig
 {
-    std::string level{"INFO"};
-    std::string format{"%Y-%m-%dT%H:%M:%S"};
-    std::string datefmt{"%Y-%m-%dT%H:%M:%S"};
-    std::string filename{}; // optional log file
+    std::string filename{};
 };
 
 struct EventConfig

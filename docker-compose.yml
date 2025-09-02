@@ -3,6 +3,7 @@ services:
     image: stefan96/heidpi-producer:latest
     container_name: heidpi_producer
     network_mode: host
+    # platform: linux/amd64
     security_opt:
       - no-new-privileges
 #    pids_limit: 8192
@@ -18,6 +19,13 @@ services:
       - MAX_BUFFERED_LINES=32768
       - JA3_URL=https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv
       - SSL_SHA1_URL=https://sslbl.abuse.ch/blacklist/sslblacklist.csv
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f /root/nDPId || exit 1"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
 
   consumer:
     build:
@@ -25,9 +33,11 @@ services:
       dockerfile: Dockerfile.consumer
     #image: stefan96/heidpi-consumer:latest
     container_name: heidpi_consumer
+    # platform: linux/amd64
     volumes:
       - ./heidpi-logs:/var/log/:rw
       - ./config.yml:/usr/src/app/config.yml:ro
+      # - .../GeoLite2-City.mmdb:/tmp/city.mmdb:ro
     network_mode: host
     security_opt:
       - no-new-privileges
@@ -39,7 +49,8 @@ services:
           cpus: '1'
           memory: 2G
     depends_on:
-      - producer
+      producer:
+        condition: service_healthy
     environment:
       - SHOW_DAEMON_EVENTS=1
       - SHOW_PACKET_EVENTS=1

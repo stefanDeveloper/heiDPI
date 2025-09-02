@@ -23,7 +23,7 @@ FetchContent_MakeAvailable(json)
 FetchContent_Declare(
         json-schema-validator
         GIT_REPOSITORY https://github.com/pboettch/json-schema-validator.git
-        GIT_TAG main
+        GIT_TAG 2.3.0
 )
 FetchContent_MakeAvailable(json-schema-validator)
 
@@ -39,9 +39,16 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(maxminddb)
 
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        v1.17.0
+)
+FetchContent_MakeAvailable(googletest)
+
 file(GLOB SOURCES src/*.cpp)
 add_executable(heidpi_cpp ${SOURCES})
-target_include_directories(heidpi_cpp PRIVATE include)
+target_include_directories(heidpi_cpp PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(heidpi_cpp PRIVATE
         yaml-cpp
         nlohmann_json::nlohmann_json
@@ -54,3 +61,9 @@ include(GNUInstallDirs)
 install(TARGETS heidpi_cpp
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+
+option(BUILD_TESTING "Build the tests" ON)
+if(BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(test)
+endif()

@@ -7,14 +7,13 @@
 /**
  * @brief Loads application configuration from a YAML file.
  */
-struct LoggingConfig {
-    std::string level{"INFO"};
-    std::string format{"%Y-%m-%dT%H:%M:%S"};
-    std::string datefmt{"%Y-%m-%dT%H:%M:%S"};
-    std::string filename{}; // optional log file
+struct LoggingConfig
+{
+    std::string filename{};
 };
 
-struct EventConfig {
+struct EventConfig
+{
     std::vector<std::string> ignore_fields;
     std::vector<std::string> ignore_risks;
     std::vector<std::string> event_names; // empty -> allow all event names
@@ -26,7 +25,8 @@ struct EventConfig {
     std::vector<std::string> geoip_keys;
 };
 
-class Config {
+class Config
+{
 public:
     explicit Config(const std::string &path);
     const LoggingConfig &logging() const { return logging_cfg; }
@@ -34,6 +34,7 @@ public:
     const EventConfig &packetEvent() const { return packet_cfg; }
     const EventConfig &daemonEvent() const { return daemon_cfg; }
     const EventConfig &errorEvent() const { return error_cfg; }
+
 private:
     LoggingConfig logging_cfg;
     EventConfig flow_cfg;
@@ -41,4 +42,3 @@ private:
     EventConfig daemon_cfg;
     EventConfig error_cfg;
 };
-

@@ -1,10 +1,14 @@
 # ---------- Build stage ----------
-FROM debian:bookworm AS build
+FROM alpine:3.22.1 AS build
 ARG CMAKE_BUILD_TYPE=Release
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential cmake pkg-config git ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# Install dependencies
+RUN apk add --no-cache \
+    build-base \
+    cmake \
+    git \
+    pkgconfig \
+    ca-certificates
 
 WORKDIR /src
 COPY heidpi-logger/ ./heidpi-logger/
@@ -19,21 +23,22 @@ RUN cmake -S heidpi-logger -B /build \
  && strip /build/heidpi_cpp || true
 
 # ---------- Runtime stage ----------
-FROM debian:bookworm-slim AS runtime
+FROM alpine:3.22.1 AS runtime
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libstdc++6 ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# Install runtime dependencies
+RUN apk add --no-cache \
+    libstdc++ \
+    ca-certificates
 
-# non-root
-RUN useradd -r -u 10001 appuser
+# Create non-root user
+RUN adduser -D -u 10001 appuser
 WORKDIR /app
 
-# Configs (aus Repo-Root)
+# Copy configuration and built binary
 COPY config.yml /app/config.yml
-
 COPY --from=build /build/heidpi_cpp /usr/local/bin/app
 
+# Environment variables
 ENV WRITE="/var/log" \
     SHOW_FLOW_EVENTS=1 \
     SHOW_PACKET_EVENTS=1 \

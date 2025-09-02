@@ -4,9 +4,6 @@ Config::Config(const std::string &path) {
     YAML::Node config = YAML::LoadFile(path);
     auto logNode = config["logging"];
     if (logNode) {
-        logging_cfg.level = logNode["level"].as<std::string>("INFO");
-        logging_cfg.format = logNode["format"].as<std::string>("%Y-%m-%dT%H:%M:%S");
-        logging_cfg.datefmt = logNode["datefmt"].as<std::string>("%Y-%m-%dT%H:%M:%S");
         if (logNode["filename"]) logging_cfg.filename = logNode["filename"].as<std::string>();
     }
 

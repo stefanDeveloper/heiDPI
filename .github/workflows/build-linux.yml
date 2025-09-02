@@ -32,8 +32,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-apt-${{ hashFiles('**/CMakeLists.txt') }}
 
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtest-dev
+
       - name: Build
         run: |
           cd heidpi-logger
           cmake .
           make
+
+      - name: Test
+        run: |
+          cd heidpi-logger
+          ctest

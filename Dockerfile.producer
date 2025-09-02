@@ -20,11 +20,11 @@ RUN apk add --no-cache \
     bash \
     make
 
-RUN git clone --branch 1.6 https://github.com/utoni/nDPId.git
+RUN git clone --branch 1.7 https://github.com/utoni/nDPId.git
 
 COPY nDPId/config.h nDPId
 
-RUN cd nDPId && mkdir build && cd build && cmake .. -DBUILD_NDPI=ON && make
+RUN cd nDPId && cmake -S . -B ./build -DBUILD_NDPI=ON  && cmake --build ./build
 
 # ---------- Runtime stage ----------
 FROM alpine:3.22.1 AS runtime

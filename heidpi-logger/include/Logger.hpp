@@ -7,13 +7,15 @@
 /**
  * @brief Very small logger writing to stdout and optional file.
  */
-class Logger {
+class Logger
+{
 public:
     static void init(const LoggingConfig &cfg);
     static void info(const std::string &msg);
     static void error(const std::string &msg);
+    ~Logger();
+
 private:
     static std::mutex mtx;
     static std::ofstream file;
 };
-

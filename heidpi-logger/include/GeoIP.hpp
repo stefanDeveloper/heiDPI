@@ -7,7 +7,8 @@
 /**
  * @brief Performs GeoIP lookups using a MaxMind DB and enriches events.
  */
-class GeoIP {
+class GeoIP
+{
 public:
     GeoIP() = default;
     GeoIP(const std::string &path, const std::vector<std::string> &keys);
@@ -23,4 +24,3 @@ private:
     bool loaded{false};
     std::vector<std::string> keys;
 };
-

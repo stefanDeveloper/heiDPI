@@ -83,26 +83,38 @@ GeoIP::~GeoIP() {
 nlohmann::json GeoIP::lookup(const std::string &ip) const {
     nlohmann::json result;
     if (!loaded || ip.empty()) return result;
+
     int gai_error = 0, mmdb_error = 0;
     MMDB_lookup_result_s res = MMDB_lookup_string(&mmdb, ip.c_str(), &gai_error, &mmdb_error);
     if (gai_error != 0 || mmdb_error != MMDB_SUCCESS || !res.found_entry) {
         return result;
     }
+
     for (const auto &key : keys) {
+        // Split dotted key path into parts
         std::vector<std::string> parts;
         std::stringstream ss(key);
         std::string part;
         while (std::getline(ss, part, '.')) parts.push_back(part);
+
         std::vector<const char*> path;
-        for (auto &p : parts) path.push_back(p.c_str());
+        for (const auto &p : parts) path.push_back(p.c_str());
         path.push_back(nullptr);
+
         MMDB_entry_data_s entry{};
         int status = MMDB_aget_value(&res.entry, &entry, path.data());
         if (status != MMDB_SUCCESS || !entry.has_data) continue;
+        
         const std::string &field = parts.back();
+
         nlohmann::json value = entryToJson(mmdb, entry);
+
         if (!value.is_null() && !(value.is_object() && value.empty())) {
-            result[field] = value;
+            if (parts.size() == 1) {
+                result[parts[0]] = value;
+            } else {
+                result[field] = value;
+            }
         }
     }
     return result;

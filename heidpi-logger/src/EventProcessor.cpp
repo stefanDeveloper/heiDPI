@@ -35,14 +35,17 @@ void EventProcessor::process(const nlohmann::json &j) {
         std::string dst = j.value("dst_ip", "");
         geo->enrich(src, dst, out);
     }
+
     for (const auto &field : config.ignore_fields) {
         out.erase(field);
     }
+
     if (!config.ignore_risks.empty() && out.contains("ndpi") && out["ndpi"].contains("flow_risk")) {
         for (const auto &risk : config.ignore_risks) {
             out["ndpi"]["flow_risk"].erase(risk);
         }
     }
+    
     std::filesystem::create_directories(directory);
     auto path = std::filesystem::path(directory) / (config.filename + ".json");
     std::ofstream ofs(path, std::ios::app);

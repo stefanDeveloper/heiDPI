@@ -1,3 +1,11 @@
+/**
+ * @file Logger.cpp
+ * @brief Implements thread-safe logging functionality with console and file output.
+ *
+ * This file provides the implementation for the Logger class, which supports logging
+ * messages with timestamps to both the console and an optional file. It ensures thread
+ * safety using a mutex and flushes critical error logs immediately to disk.
+ */
 #include "Logger.hpp"
 #include <iostream>
 #include <chrono>
@@ -7,15 +15,6 @@
 
 std::mutex Logger::mtx;
 std::ofstream Logger::file;
-
-/**
- * @file Logger.cpp
- * @brief Implements thread-safe logging functionality with console and file output.
- *
- * This file provides the implementation for the Logger class, which supports logging
- * messages with timestamps to both the console and an optional file. It ensures thread
- * safety using a mutex and flushes critical error logs immediately to disk.
- */
 
 /**
  * @namespace Logger
@@ -49,6 +48,7 @@ static std::string timestamp()
  */
 void Logger::init(const LoggingConfig &cfg)
 {
+    std::lock_guard<std::mutex> lock(mtx);
     if (!cfg.filename.empty())
     {
         file.open(cfg.filename, std::ios::app); // Append mode
@@ -104,8 +104,23 @@ void Logger::error(const std::string &msg)
  *
  * Ensures the log file is properly closed to release system resources.
  */
+void Logger::destroy() {
+    std::lock_guard<std::mutex> lock(mtx);
+    if (file.is_open()) {
+        file.close();
+    }
+    file.clear();  // reset flags
+}
+
+
+/**
+ * @brief Closes the log file when the Logger object is destroyed.
+ *
+ * Ensures the log file is properly closed to release system resources.
+ */
 Logger::~Logger()
 {
+    std::lock_guard<std::mutex> lock(mtx);
     if (file.is_open())
     {
         file.close();

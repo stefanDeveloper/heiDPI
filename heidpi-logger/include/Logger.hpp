@@ -13,6 +13,7 @@ public:
     static void init(const LoggingConfig &cfg);
     static void info(const std::string &msg);
     static void error(const std::string &msg);
+    static void destroy();
     ~Logger();
 
 private:

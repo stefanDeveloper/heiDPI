@@ -4,6 +4,7 @@
 
 namespace
 {
+    // Convert MaxMind entry into JSON recursively
     nlohmann::json entryToJson(const MMDB_s &db, const MMDB_entry_data_s &entry)
     {
         switch (entry.type)
@@ -24,6 +25,7 @@ namespace
             return entry.uint64;
         case MMDB_DATA_TYPE_BOOLEAN:
             return static_cast<bool>(entry.boolean);
+
         case MMDB_DATA_TYPE_MAP:
         {
             MMDB_entry_s sub{&db, entry.offset};
@@ -32,22 +34,29 @@ namespace
             {
                 nlohmann::json obj = nlohmann::json::object();
                 MMDB_entry_data_list_s *ptr = list;
-                while (ptr && ptr->next)
+                while (ptr)
                 {
-                    auto key = ptr->entry_data;
-                    ptr = ptr->next;
-                    auto val = ptr->entry_data;
-                    ptr = ptr->next;
-                    if (key.type != MMDB_DATA_TYPE_UTF8_STRING)
-                        continue;
-                    std::string k(key.utf8_string, key.data_size);
-                    obj[k] = entryToJson(db, val);
+                    if (ptr->entry_data.type == MMDB_DATA_TYPE_UTF8_STRING)
+                    {
+                        std::string key(ptr->entry_data.utf8_string, ptr->entry_data.data_size);
+                        ptr = ptr->next;
+                        if (ptr)
+                        {
+                            obj[key] = entryToJson(db, ptr->entry_data);
+                            ptr = ptr->next;
+                        }
+                    }
+                    else
+                    {
+                        ptr = ptr->next;
+                    }
                 }
                 MMDB_free_entry_data_list(list);
                 return obj;
             }
             break;
         }
+
         case MMDB_DATA_TYPE_ARRAY:
         {
             MMDB_entry_s sub{&db, entry.offset};
@@ -66,11 +75,13 @@ namespace
             }
             break;
         }
+
         default:
             break;
         }
         return {};
     }
+
 } // namespace
 
 GeoIP::GeoIP(const std::string &path, const std::vector<std::string> &k)
@@ -118,6 +129,7 @@ nlohmann::json GeoIP::lookup(const std::string &ip) const
         while (std::getline(ss, part, '.'))
             parts.push_back(part);
 
+        // Build C-style path
         std::vector<const char *> path;
         for (const auto &p : parts)
             path.push_back(p.c_str());
@@ -128,22 +140,22 @@ nlohmann::json GeoIP::lookup(const std::string &ip) const
         if (status != MMDB_SUCCESS || !entry.has_data)
             continue;
 
-        const std::string &field = parts.back();
-
         nlohmann::json value = entryToJson(mmdb, entry);
-
         if (!value.is_null() && !(value.is_object() && value.empty()))
         {
-            if (parts.size() == 1)
+            // If the requested key is dotted, keep it as a literal string
+            if (parts.size() > 1)
             {
-                result[parts[0]] = value;
+                result[key] = value;
             }
             else
             {
-                result[field] = value;
+                // Single-part key, might be an object (e.g. "location")
+                result[parts[0]] = value;
             }
         }
     }
+
     return result;
 }
 
@@ -152,6 +164,7 @@ void GeoIP::enrich(const std::string &src_ip, const std::string &dst_ip,
 {
     if (!loaded)
         return;
+
     auto src = lookup(src_ip);
     if (!src.empty())
     {

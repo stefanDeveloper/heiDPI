@@ -276,18 +276,13 @@ int main(int argc, char **argv)
             const auto &allowedNames = getAllowedNames(key);
             if (!allowedNames.empty() &&
                 std::find(allowedNames.begin(), allowedNames.end(), name) == allowedNames.end()) {
-                Logger::info("Skipping event '" + name + "' of type " + key);
+                // Logger::info("Skipping event '" + name + "' of type " + key);
                 continue;
             }
 
-            bool handled = false;
             for (auto &w : workers) {
                 if (w.eventKey != key) continue;
                 w.processor.process(event);
-                handled = true;
-            }
-            if (!handled) {
-                Logger::info("No handler enabled for event '" + name + "' of type " + key);
             }
         } });
 

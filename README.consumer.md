@@ -101,7 +101,7 @@ docker run -v ${PWD}/heidpi-data:/tmp/ -v ${PWD}/heidpi-logs:/var/log -e UNIX=/t
 
 ### Config file
 
-You can change the default configuration by mounting a config file `/usr/src/app/config.yml`:
+You can change the default configuration by mounting a config file `/app/config.yml`:
 
 ```yaml
 flow_event:
